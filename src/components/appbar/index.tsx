@@ -310,7 +310,7 @@ function SMNavigationMenuBar({ theme }: { theme: string }) {
                                 if (!item) return null;
 
                                 if (item.options) return (
-                                    <AccordionItem value={`nav-item-${index}`} className='bg-muted hover:bg-[hsl(var(--muted)/60%)] transition-colors rounded-md'>
+                                    <AccordionItem key={index} value={`nav-item-${index}`} className='bg-muted hover:bg-[hsl(var(--muted)/60%)] transition-colors rounded-md'>
                                         <AccordionTrigger className='py-2 px-4 rounded-md'>
                                             {item.name}
                                         </AccordionTrigger>
@@ -323,7 +323,7 @@ function SMNavigationMenuBar({ theme }: { theme: string }) {
                                                     if (!option) return null;
 
                                                     return (
-                                                        <li>
+                                                        <li key={index}>
                                                             <a className="block select-none rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
                                                             >
                                                                 <div className="text-sm font-medium leading-none">{option.name}</div>
@@ -339,7 +339,7 @@ function SMNavigationMenuBar({ theme }: { theme: string }) {
                                     </AccordionItem>
                                 )
                                 else return (
-                                    <Link href={item.path} legacyBehavior passHref>
+                                    <Link key={index} href={item.path} legacyBehavior passHref>
                                         <Button className='block w-full text-left bg-muted hover:bg-[hsl(var(--muted)/60%)] text-foreground'>
                                             {/* <AccordionTrigger>{item.name}</AccordionTrigger> */}
                                             {item.name}
