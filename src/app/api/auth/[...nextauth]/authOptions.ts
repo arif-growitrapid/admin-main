@@ -5,6 +5,10 @@ import { html, text } from "@/utils/email-html";
 import { AuthOptions } from "next-auth";
 import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import clientPromise from "@/db/db";
+import sessionHandler from "./session";
+import config from "@/config";
+import { createUser } from "@/functions/user";
+import { DBAuthType } from "@/types/auth";
 
 const useSecureCookies = process.env.NEXTAUTH_URL ? process.env.NEXTAUTH_URL.startsWith('https://') : false;
 const cookiePrefix = useSecureCookies ? '__Secure-' : ''
@@ -49,7 +53,9 @@ export const nextAuthOptions: AuthOptions = {
     /**
      * Currently supported database is Firebase.
      */
-    adapter: MongoDBAdapter(clientPromise),
+    adapter: MongoDBAdapter(clientPromise, {
+        databaseName: config.db.auth_name,
+    }),
 
     /**
      * Add custom pages here, if needed.
@@ -75,46 +81,12 @@ export const nextAuthOptions: AuthOptions = {
         async redirect({ url, baseUrl, ...rest }) {
             return baseUrl
         },
-        async session({ session, user, token, ...rest }) {
-            try {
-                if (session?.user) {
-                    /**
-                     * Add property to session, like an access_token from a provider.
-                     * 
-                     * We are adding user id and role to the session object here.
-                     * Don't remove the return statement here, it will break the authentication flow.
-                     * Also remove these lines, as these are necessary for the admin panel.
-                     */
-
-                    session.user = {
-                        ...session.user,
-                        ...user,
-                    }
-
-                    if ([
-                        "as2048282@gmail.com",
-                        "arifsardar.private@gmail.com",
-                        "bishal.nandi@growitrapid.com",
-                        "nandibishal97@yahoo.in",
-                        "nandibishal04@gmail.com",
-                        "qa.sixsigma@gmail.com"
-                    ].includes(user?.email)) {
-                        // @ts-ignore
-                        session.user.role = 3;
-                    }
-                }
-                return session;
-
-            } catch (err) {
-                console.error(err);
-                return session;
-            }
-        },
+        session: sessionHandler,
     },
 
     events: {
         createUser(message) {
-            console.log("createUser", message);
+            createUser(message.user as Partial<DBAuthType>, false);
         },
         signIn(message) { },
     },
