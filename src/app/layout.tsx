@@ -7,6 +7,7 @@ import Providers from '@/redux/provider'
 import './globals.css'
 import Structure from '@/components/structure'
 import config from '@/config';
+import { Toaster } from '@/components/ui/toaster';
 // import '@/components/editor/wysiwyg/style.scss'
 
 // Add your custom fonts here
@@ -23,11 +24,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const theme = cookieStore.get(config.theme_key);
 
     return (
-        <html lang="en" className={theme?.value || ""}>
-            <body className={inter.className}>
+        // <html lang="en" className={theme?.value || "dark"}>
+        <html lang='en'>
+            <body className={`${inter.className} ${theme?.value || "dark"}`}>
                 <Providers theme={theme?.value}>
                     <Structure theme={theme?.value || ""}>
                         {children}
+                        <Toaster />
                     </Structure>
                 </Providers>
             </body>

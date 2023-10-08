@@ -28,14 +28,13 @@ import { Button } from "@/components/ui/button"
 import { ChevronDownIcon } from "@radix-ui/react-icons"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useColumns } from "./columns"
 
 interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[]
     data: TData[]
 }
 
 export function DataTable<TData, TValue>({
-    columns,
     data,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
@@ -43,6 +42,8 @@ export function DataTable<TData, TValue>({
     const [columnFilterBy, setColumnFilterBy] = React.useState("email");
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
+
+    const columns = useColumns() as ColumnDef<TData, TValue>[]
 
     const table = useReactTable({
         data,

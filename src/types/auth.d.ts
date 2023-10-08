@@ -23,7 +23,7 @@ export interface DBAuthType {
 export interface AuthType {
     id: string;
     roles: string[] & defaultRoles[];
-    status: "active" | "inactive" | "blocked";
+    status: "active" | "inactive" | "blocked" | "pending";
     createdAt: Date;
 
     name: string | null;
