@@ -27,7 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     const cookieStore = cookies();
     const theme = cookieStore.get(config.theme_key);
 
-    if (!session && session.user.permissions?.view_dashboard && session.user.permissions.view_dashboard)
+    if (session && session.user.permissions?.view_dashboard && session.user.permissions.view_dashboard)
         return (
             <html lang='en'>
                 <body className={`${inter.className} ${theme?.value || "dark"}`}>
