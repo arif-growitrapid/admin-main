@@ -10,13 +10,13 @@ import { createEmptyHistoryState } from "@lexical/react/LexicalHistoryPlugin";
 
 export default function Providers({ children, theme }: { children: React.ReactNode, theme?: string }) {
 
-    const themeBroadcast = useRef(new BroadcastChannel(config.theme_key, { should_receive_own_messages: true }));
+    const themeBroadcast = useRef(new BroadcastChannel(config.theme_key, { should_receive_own_messages: false }));
 
     useEffect(() => {
         themeBroadcast.current.onReceiveMessage((event, data) => {
             if (event === "theme_toggle") {
-                document.documentElement.className = "";
-                document.documentElement.classList.add(data.theme as string);
+                document.body.className = "";
+                document.body.classList.add(data.theme as string);
             }
         })
     }, []);

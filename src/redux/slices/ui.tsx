@@ -17,8 +17,8 @@ const uiSlice = createSlice({
 
             setCookie("theme", theme, 15);
             themeBroadcast.postMessage('theme_toggle', { theme });
-            document.documentElement.className = "";
-            document.documentElement.classList.add(theme);
+            document.body.className = "";
+            document.body.classList.add(theme);
 
             state.theme = theme;
         },

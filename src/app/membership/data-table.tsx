@@ -66,7 +66,7 @@ export function DataTable<TData, TValue>({
 
     return (
         <div className="rounded-md border h-full flex flex-col">
-            <div className="flex items-center gap-1 border-b-4 p-2">
+            <div className="flex items-center justify-between gap-1 border-b-4 p-2">
 
                 <div className="flex gap-1">
                     <Input
@@ -105,7 +105,7 @@ export function DataTable<TData, TValue>({
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="ml-auto">
+                        <Button variant="outline">
                             Columns <ChevronDownIcon className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>

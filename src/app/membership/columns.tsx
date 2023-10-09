@@ -11,6 +11,8 @@ import { ColumnDef } from "@tanstack/react-table"
 
 import { VscVerified } from "react-icons/vsc";
 import UserModal from "./user_modal";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const useColumns = (): ColumnDef<DBAuthType>[] => {
     const { toast } = useToast();
@@ -43,7 +45,7 @@ export const useColumns = (): ColumnDef<DBAuthType>[] => {
 
                 return (
                     <Dialog
-                        // open={user.email === "as2048282@gmail.com"}
+                    // open={user.email === "as2048282@gmail.com"}
                     >
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -108,6 +110,25 @@ export const useColumns = (): ColumnDef<DBAuthType>[] => {
         {
             accessorKey: "name",
             header: "Name",
+            cell: ({ row }) => {
+                const data = row.original;
+
+                return (
+                    <div className="flex flex-row gap-2 items-center">
+                        <Avatar className={`h-8 w-8 rounded-full`}>
+                            <AvatarImage
+                                src={data.image || ""}
+                                alt={data.name || data.email || ""}
+                                referrerPolicy='no-referrer'
+                            />
+                            <AvatarFallback className={`h-full w-full rounded-none`}>
+                                {data.name?.split(" ").map(e => e.charAt(0)).join("")}
+                            </AvatarFallback>
+                        </Avatar>
+                        <span className="whitespace-nowrap">{data.name}</span>
+                    </div>
+                );
+            },
         },
         {
             accessorKey: "email",
@@ -142,9 +163,9 @@ export const useColumns = (): ColumnDef<DBAuthType>[] => {
                 const data = row.original;
 
                 return (
-                    <div className="flex flex-row gap-1">
-                        {data.roles.map((role) => (
-                            <span key={role} className="text-sm text-gray-500 uppercase">{role}, </span>
+                    <div className="flex flex-row gap-1 flex-wrap">
+                        {data.roles.slice(0, 3).map((role) => (
+                            <Badge key={role} className="text-sm text-muted-foreground bg-muted hover:bg-[hsl(var(--muted)/60%)] uppercase px-2">{role}</Badge>
                         ))}
                     </div>
                 );
@@ -166,6 +187,19 @@ export const useColumns = (): ColumnDef<DBAuthType>[] => {
                     </Button>
                 )
             },
+            cell: ({ row }) => {
+                const data = row.original;
+
+                return (
+                    <div className="flex flex-row gap-1 items-center justify-center">
+                        <Badge variant="outline" className={`rounded-full
+                                ${data.status === "active" ? "border-green-500" : data.status === "pending" ? "border-yellow-500" : "border-red-600"}
+                                ${data.status === "active" ? "bg-green-500" : data.status === "pending" ? "bg-yellow-500" : "bg-red-600"}
+                                [--tw-bg-opacity:0.3]
+                            `}>{data.status.toUpperCase()}</Badge>
+                    </div>
+                );
+            },
         },
         {
             accessorKey: "createdAt",
@@ -174,6 +208,7 @@ export const useColumns = (): ColumnDef<DBAuthType>[] => {
                     <Button
                         variant="ghost"
                         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        className="whitespace-nowrap"
                     >
                         Registered On
                         <CaretSortIcon className="ml-2 h-4 w-4" />
