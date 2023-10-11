@@ -27,16 +27,16 @@ import CommingSoon from '../svg/comming_soon';
 import SearchDialog from '../search';
 
 export const menuFunc = (user?: AuthType) => [
-    {
+    (user?.permissions?.user_view || true) && {
         name: "Membership",
         path: "/membership",
         description: "Manage members and roles",
     },
-    user?.permissions?.blogs_add && {
+    (user?.permissions?.blogs_add) && {
         name: "Blogs",
         path: "/blogs"
     },
-    (user?.permissions?.view_reports || true) && {
+    (user?.permissions?.view_reports) && {
         name: "Monitors",
         path: "/monitors",
         description: "View, manage and examine monitors data and reports. Well designed charts and graphs to help you understand your data.",
@@ -53,7 +53,7 @@ export const menuFunc = (user?: AuthType) => [
             }
         ]
     },
-    {
+    (user?.permissions?.manage_database) && {
         name: "Database",
         path: "/database",
         description: "Manage database and collections as well as assets. Perform CRUD operations on database and collections.",
@@ -75,7 +75,7 @@ export const menuFunc = (user?: AuthType) => [
             }
         ],
     },
-    {
+    (user?.permissions?.view_settings) && {
         name: "Settings",
         path: "/settings",
         description: "Manage settings and configurations.",

@@ -59,6 +59,7 @@ const permissions = [
     "service_view_draft",
 
     // Other Management
+    "manage_database",
     "view_dashboard",
     "view_settings",
     "view_logs",
