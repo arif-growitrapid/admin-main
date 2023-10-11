@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
 import { DBAuthType } from "@/types/auth";
@@ -10,11 +10,15 @@ import { CaretSortIcon, ClipboardIcon, DotsHorizontalIcon, ExclamationTriangleIc
 import { ColumnDef } from "@tanstack/react-table"
 
 import { VscVerified } from "react-icons/vsc";
-import UserModal from "./user_modal";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserModal from "@/components/user_modal";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-export const useColumns = (): ColumnDef<DBAuthType>[] => {
+export const useColumns = ({ openedUser, setOpenedUser }: {
+    openedUser: string,
+    setOpenedUser: (value: string) => void
+}): ColumnDef<DBAuthType>[] => {
     const { toast } = useToast();
 
     return [
@@ -45,7 +49,14 @@ export const useColumns = (): ColumnDef<DBAuthType>[] => {
 
                 return (
                     <Dialog
-                    // open={user.email === "as2048282@gmail.com"}
+                        open={user.id === openedUser}
+                        onOpenChange={open => {
+                            if (!open) {
+                                setOpenedUser("");
+                            } else {
+                                setOpenedUser(user.id);
+                            }
+                        }}
                     >
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -98,7 +109,17 @@ export const useColumns = (): ColumnDef<DBAuthType>[] => {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <UserModal user={user} />
+                        <DialogContent className={`rounded-lg
+                            bg-transparent border-none w-full h-full max-w-full p-0`} onClick={e => {
+                                e.stopPropagation();
+                                setOpenedUser("");
+                            }}>
+                            <ScrollArea className='h-full w-full' orientation='both'>
+                                <div className="sm:container mx-auto sm:py-5 h-full">
+                                    <UserModal user={user} />
+                                </div>
+                            </ScrollArea>
+                        </DialogContent>
                     </Dialog>
                 )
             },

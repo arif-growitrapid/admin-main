@@ -29,21 +29,35 @@ import { ChevronDownIcon } from "@radix-ui/react-icons"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useColumns } from "./columns"
+import { VscRefresh } from "react-icons/vsc"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface DataTableProps<TData, TValue> {
-    data: TData[]
+    initial_data: TData[]
 }
 
 export function DataTable<TData, TValue>({
-    data,
+    initial_data,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnFilterBy, setColumnFilterBy] = React.useState("email");
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
+    const [openedUser, setOpenedUser] = React.useState("");
+    const [data, setData] = React.useState<TData[]>(initial_data);
 
-    const columns = useColumns() as ColumnDef<TData, TValue>[]
+    function refreshData() {
+        setData([]);
+        setTimeout(() => {
+            setData(initial_data);
+        }, 1000);
+    }
+
+    const columns = useColumns({
+        openedUser,
+        setOpenedUser
+    }) as ColumnDef<TData, TValue>[]
 
     const table = useReactTable({
         data,
@@ -103,32 +117,38 @@ export function DataTable<TData, TValue>({
                     </Select>
                 </div>
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                            Columns <ChevronDownIcon className="ml-2 h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {table
-                            .getAllColumns()
-                            .filter((column) => column.getCanHide())
-                            .map((column) => {
-                                return (
-                                    <DropdownMenuCheckboxItem
-                                        key={column.id}
-                                        className="capitalize"
-                                        checked={column.getIsVisible()}
-                                        onCheckedChange={(value) =>
-                                            column.toggleVisibility(!!value)
-                                        }
-                                    >
-                                        {column.id}
-                                    </DropdownMenuCheckboxItem>
-                                )
-                            })}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex gap-1">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                Columns <ChevronDownIcon className="ml-2 h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {table
+                                .getAllColumns()
+                                .filter((column) => column.getCanHide())
+                                .map((column) => {
+                                    return (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            className="capitalize"
+                                            checked={column.getIsVisible()}
+                                            onCheckedChange={(value) =>
+                                                column.toggleVisibility(!!value)
+                                            }
+                                        >
+                                            {column.id}
+                                        </DropdownMenuCheckboxItem>
+                                    )
+                                })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Button variant="outline" size="icon" onClick={refreshData}>
+                        <VscRefresh className="h-4 w-4" />
+                    </Button>
+                </div>
 
             </div>
 
@@ -167,11 +187,20 @@ export function DataTable<TData, TValue>({
                                 </TableRow>
                             ))
                         ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
-                                </TableCell>
-                            </TableRow>
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <TableRow key={i}>
+                                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                                    <TableCell className='flex items-center justify-center gap-2'>
+                                        <Skeleton className="h-8 w-8 rounded-full" />
+                                        <Skeleton className="h-5 w-32" />
+                                    </TableCell>
+                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                </TableRow>
+                            ))
                         )}
                     </TableBody>
                 </Table>

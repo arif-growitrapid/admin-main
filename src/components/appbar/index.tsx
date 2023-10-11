@@ -11,19 +11,22 @@ import { Button } from '../ui/button';
 import { signOut, useSession } from 'next-auth/react';
 import config from '@/config';
 import { BroadcastChannel } from '@/utils/web';
-import { BellIcon, CodeIcon, GearIcon, HamburgerMenuIcon, KeyboardIcon, PersonIcon } from '@radix-ui/react-icons';
+import { BellIcon, GearIcon, HamburgerMenuIcon, KeyboardIcon, PersonIcon } from '@radix-ui/react-icons';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from '../ui/navigation-menu';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { FaArrowRightFromBracket, FaCreditCard } from 'react-icons/fa6';
 import { AuthType } from '@/types/auth';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTrigger } from '../ui/sheet';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { ScrollArea } from '../ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
+import { useToast } from '../ui/use-toast';
+import CommingSoon from '../svg/comming_soon';
+import SearchDialog from '../search';
 
-const menuFunc = (user?: AuthType) => [
+export const menuFunc = (user?: AuthType) => [
     {
         name: "Membership",
         path: "/membership",
@@ -82,6 +85,7 @@ const menuFunc = (user?: AuthType) => [
 export default function AppBar({ theme }: { theme: string }) {
     const { data: session, status } = useSession();
     const [themeState, setThemeState] = useState(theme);
+    const { toast } = useToast();
 
     const themeBroadcast = useRef(new BroadcastChannel<string>(config.theme_key, { should_receive_own_messages: true }));
 
@@ -104,13 +108,15 @@ export default function AppBar({ theme }: { theme: string }) {
                 <div className={`flex-1 flex-grow lg:hidden`}></div>
 
                 <div className={`logo hidden sm:block`}>
-                    <Image
-                        src={themeState === 'dark' ? DarkLogo : LightLogo}
-                        alt='logo'
-                        height={25}
-                        width={170}
-                        className='cursor-pointer object-contain'
-                    />
+                    <Link href={"/"}>
+                        <Image
+                            src={themeState === 'dark' ? DarkLogo : LightLogo}
+                            alt='logo'
+                            height={25}
+                            width={170}
+                            className='cursor-pointer object-contain'
+                        />
+                    </Link>
                 </div>
 
                 <div className={`menu w-auto h-full hidden lg:flex flex-row items-center gap-2`}>
@@ -121,22 +127,31 @@ export default function AppBar({ theme }: { theme: string }) {
 
                 <div className={`right w-auto h-full flex flex-row items-center gap-2`}>
 
-                    <Button
-                        variant="outline"
-                        size="default"
-                        className={`overflow-hidden flex flex-row justify-between items-center gap-5
+                    <SearchDialog>
+                        <Button
+                            variant="outline"
+                            size="default"
+                            className={`overflow-hidden flex flex-row justify-between items-center gap-5
                             cursor-pointer [color:hsl(var(--foreground)/70%)]`}
-                    >
-                        <span>
-                            Search...
-                        </span>
-                        <span className='border px-1 bg-accent rounded-sm align-middle'>
-                            <span className='text-sm'>⌘</span>
-                            <span className='text-xs'>K</span>
-                        </span>
-                    </Button>
+                        >
+                            <span>
+                                Search...
+                            </span>
+                            <span className='border px-1 bg-accent rounded-sm align-middle'>
+                                <span className='text-sm'>⌘</span>
+                                <span className='text-xs'>K</span>
+                            </span>
+                        </Button>
+                    </SearchDialog>
 
-                    <Button variant="outline" size="icon" className='overflow-hidden aspect-square'>
+                    <Button variant="outline" size="icon" className='overflow-hidden aspect-square' onClick={e => {
+                        toast({
+                            title: "Coming Soon!",
+                            description: "Notifications is not available yet.",
+                            variant: "default",
+                            duration: 5000,
+                        });
+                    }}>
                         <BellIcon className={`h-[1.2em] w-[1.2em] rounded-none`} />
                     </Button>
 
@@ -161,28 +176,35 @@ export default function AppBar({ theme }: { theme: string }) {
                                 <DropdownMenuSeparator />
 
                                 <DropdownMenuGroup>
-                                    <DropdownMenuItem>
-                                        Profile
-                                        <DropdownMenuShortcut><PersonIcon /></DropdownMenuShortcut>
-                                    </DropdownMenuItem>
-                                    <DialogTrigger asChild>
+                                    <Link href="/profile" passHref>
                                         <DropdownMenuItem>
-                                            View Raw
-                                            <DropdownMenuShortcut><CodeIcon /></DropdownMenuShortcut>
+                                            Profile
+                                            <DropdownMenuShortcut><PersonIcon /></DropdownMenuShortcut>
                                         </DropdownMenuItem>
-                                    </DialogTrigger>
-                                    <DropdownMenuItem>
+                                    </Link>
+                                    <DropdownMenuItem onClick={e => {
+                                        toast({
+                                            title: "Coming Soon!",
+                                            description: "Billing is not available yet.",
+                                            variant: "default",
+                                            duration: 5000,
+                                        });
+                                    }}>
                                         Billing
                                         <DropdownMenuShortcut><FaCreditCard /></DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        Settings
-                                        <DropdownMenuShortcut><GearIcon /></DropdownMenuShortcut>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        Keyboard shortcuts
-                                        <DropdownMenuShortcut><KeyboardIcon /></DropdownMenuShortcut>
-                                    </DropdownMenuItem>
+                                    <Link href="/settings" passHref>
+                                        <DropdownMenuItem>
+                                            Settings
+                                            <DropdownMenuShortcut><GearIcon /></DropdownMenuShortcut>
+                                        </DropdownMenuItem>
+                                    </Link>
+                                    <DialogTrigger asChild>
+                                        <DropdownMenuItem>
+                                            Keyboard shortcuts
+                                            <DropdownMenuShortcut><KeyboardIcon /></DropdownMenuShortcut>
+                                        </DropdownMenuItem>
+                                    </DialogTrigger>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={e => {
                                         signOut();
@@ -197,20 +219,19 @@ export default function AppBar({ theme }: { theme: string }) {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <DialogContent className="w-[calc(100%-2rem)] max-w-[600px] h-full max-h-[600px] rounded-lg">
+                        <DialogContent className="w-[calc(100%-2rem)] max-w-[800px] h-full max-h-[600px] rounded-lg">
                             <DialogHeader>
-                                <DialogTitle>View Raw Data</DialogTitle>
+                                <DialogTitle>Keyboard Shortcuts</DialogTitle>
                                 <DialogDescription>
-                                    View raw data of your account. This data is not editable.
+                                    <p className="text-xs text-muted-foreground">
+                                        Below are the keyboard shortcuts that can be used to navigate through the app.
+                                    </p>
                                 </DialogDescription>
                             </DialogHeader>
 
                             <ScrollArea className='' orientation='both'>
-                                <pre className="rounded-md p-4 text-xs">
-                                    <code className="">
-                                        {JSON.stringify(session?.user, null, 2)}
-                                    </code>
-                                </pre>
+                                <CommingSoon className='w-full h-auto max-w-[600px] mx-auto' />
+                                <p className='text-lg font-medium text-muted-foreground text-center'>This feature is comming soon</p>
                             </ScrollArea>
                         </DialogContent>
                     </Dialog>
@@ -324,13 +345,15 @@ function SMNavigationMenuBar({ theme }: { theme: string }) {
 
                                                     return (
                                                         <li key={index}>
-                                                            <a className="block select-none rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
+                                                            <Link className="block select-none rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
+                                                                href={`${item.path}${option.path}`}
+                                                                passHref
                                                             >
                                                                 <div className="text-sm font-medium leading-none">{option.name}</div>
                                                                 <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
                                                                     {option.description}
                                                                 </p>
-                                                            </a>
+                                                            </Link>
                                                         </li>
                                                     )
                                                 })}
@@ -365,23 +388,24 @@ function SMNavigationMenuBar({ theme }: { theme: string }) {
 const ListItem = React.forwardRef<
     React.ElementRef<"a">,
     React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
+>(({ className, title, children, href, ...props }, ref) => {
     return (
         <li>
             <NavigationMenuLink asChild>
-                <a
+                <Link
                     ref={ref}
                     className={cn(
                         "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
                         className
                     )}
+                    href={href || "#"}
                     {...props}
                 >
                     <div className="text-sm font-medium leading-none">{title}</div>
                     <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                         {children}
                     </p>
-                </a>
+                </Link>
             </NavigationMenuLink>
         </li>
     )

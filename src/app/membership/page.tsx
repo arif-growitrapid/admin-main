@@ -22,13 +22,9 @@ export default async function page({ }: {}) {
 
     const data = await filterUsers({}) || [];
 
-    // for (let i = 0; i < 10; i++) {
-    //     data.push(data[2]);
-    // }
-
     return (
         <div className="sm:container mx-auto sm:py-5 h-full">
-            <DataTable data={data} />
+            <DataTable initial_data={data} />
         </div>
     )
 }

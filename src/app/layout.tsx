@@ -27,11 +27,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     const cookieStore = cookies();
     const theme = cookieStore.get(config.theme_key);
 
-    if (session && session.user.permissions?.view_dashboard && session.user.permissions.view_dashboard)
+    if (session && session.user.permissions?.view_dashboard && session.user.permissions.visit_admin_panel)
         return (
             <html lang='en'>
                 <body className={`${inter.className} ${theme?.value || "dark"}`}>
-                    <Providers theme={theme?.value}>
+                    <Providers theme={theme?.value} session={session}>
                         <Structure theme={theme?.value || ""}>
                             {children}
                             <Toaster />
@@ -44,7 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         return (
             <html lang='en'>
                 <body className={`${inter.className} ${theme?.value || "dark"}`}>
-                    <Providers theme={theme?.value}>
+                    <Providers theme={theme?.value} session={session}>
                         <h1 className="text-4xl text-center pt-20">
                             You are not authorized to view this page
                         </h1>

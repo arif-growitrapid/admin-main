@@ -7,9 +7,17 @@ import { useEffect, useRef } from "react";
 import { BroadcastChannel } from "@/utils/web";
 import config from "@/config";
 import { createEmptyHistoryState } from "@lexical/react/LexicalHistoryPlugin";
+import { Session } from "next-auth";
 
-export default function Providers({ children, theme }: { children: React.ReactNode, theme?: string }) {
-
+export default function Providers({
+    children,
+    theme,
+    session
+}: {
+    children: React.ReactNode,
+    theme?: string,
+    session: Session | null,
+}) {
     const themeBroadcast = useRef(new BroadcastChannel(config.theme_key, { should_receive_own_messages: false }));
 
     useEffect(() => {
@@ -21,7 +29,7 @@ export default function Providers({ children, theme }: { children: React.ReactNo
         })
     }, []);
 
-    return <SessionProvider>
+    return <SessionProvider session={session}>
         <Provider store={store} serverState={{
             ui: {
                 theme: theme || "dark",

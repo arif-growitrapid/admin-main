@@ -9,6 +9,7 @@ export interface DBAuthType {
     name: string | null;
     email: string;
     image: string | null;
+    bio: string | null;
     emailVerified: Date | boolean | null;
 
     dob: Date | null;
@@ -18,6 +19,7 @@ export interface DBAuthType {
     extraPhones?: PhoneType[];
     addresses?: AddressType[];
     socialProfiles?: SocialProfileType[];
+    savedContent?: SavedContentType[];
 }
 
 export interface AuthType {
@@ -29,6 +31,7 @@ export interface AuthType {
     name: string | null;
     email: string;
     image: string | null;
+    bio: string | null;
     emailVerified: Date | boolean | null;
 
     dob: Date | null;
@@ -38,6 +41,7 @@ export interface AuthType {
     extraPhones?: PhoneType[];
     addresses?: AddressType[];
     socialProfiles?: SocialProfileType[];
+    savedContent?: SavedContentType[];
 
     permissions?: PermissionsType;
 }
@@ -51,6 +55,7 @@ export interface MinAuthType {
     name: string | null;
     email: string;
     image: string | null;
+    bio: string | null;
     emailVerified: Date | boolean | null;
 };
 
@@ -90,4 +95,10 @@ export interface AddressType {
 export interface SocialProfileType {
     name: string;
     url: string;
+};
+
+export interface SavedContentType {
+    ref: string;
+    type: "post" | "course" | "service" | string;
+    createdAt: Date;
 };
