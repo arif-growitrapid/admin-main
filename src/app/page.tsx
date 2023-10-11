@@ -17,7 +17,7 @@ export default function Home() {
 
       {status === "unauthenticated" && (
         <div className="flex justify-center mt-4">
-          <Button onClick={() => signIn()}>Sign In</Button>
+          <Button onClick={() => signIn("google", { redirect: false })}>Sign In</Button>
         </div>
       )}
 
