@@ -10,7 +10,11 @@ import { getServerSession } from "next-auth";
  */
 export async function matchPermissions(
     permissions: PermissionsArrayType[],
-) {
+): Promise<{
+    session: any;
+    matches: typeof permissions;
+    isMatched: boolean;
+} | null> {
     try {
         const session = await getServerSession(nextAuthOptions);
         if (!session) return null;

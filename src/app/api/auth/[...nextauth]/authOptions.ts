@@ -86,7 +86,7 @@ export const nextAuthOptions: AuthOptions = {
 
     events: {
         createUser(message) {
-            createUser(message.user as Partial<DBAuthType>, false);
+            createUser(message.user as Partial<DBAuthType>);
         },
         signIn(message) { },
     },

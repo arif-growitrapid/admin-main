@@ -27,10 +27,22 @@ import CommingSoon from '../svg/comming_soon';
 import SearchDialog from '../search';
 
 export const menuFunc = (user?: AuthType) => [
-    (user?.permissions?.user_view || true) && {
+    {
         name: "Membership",
         path: "/membership",
         description: "Manage members and roles",
+        options: [
+            (user?.permissions?.user_view || true) && {
+                name: "Users",
+                path: "/users",
+                description: "Manage users and their roles"
+            },
+            (user?.permissions?.role_view || true) && {
+                name: "Roles",
+                path: "/roles",
+                description: "Manage roles and their permissions"
+            },
+        ],
     },
     (user?.permissions?.blogs_add) && {
         name: "Blogs",

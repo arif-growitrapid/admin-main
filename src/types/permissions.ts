@@ -7,7 +7,6 @@ const permissions = [
     "user_delete",
     "user_view",
     "user_edit_others",
-    "user_delete_others",
 
     // Role Management
     "role_add",

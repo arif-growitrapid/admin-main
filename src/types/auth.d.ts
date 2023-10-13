@@ -1,6 +1,8 @@
+import { ObjectId } from "mongodb";
 import { PermissionsArrayType } from "./permissions";
 
 export interface DBAuthType {
+    _id: ObjectId | string;
     id: string;
     roles: string[];
     status: "active" | "inactive" | "blocked" | "pending";
@@ -23,6 +25,7 @@ export interface DBAuthType {
 }
 
 export interface AuthType {
+    _id: ObjectId | string;
     id: string;
     roles: string[] & defaultRoles[];
     status: "active" | "inactive" | "blocked" | "pending";
@@ -47,6 +50,7 @@ export interface AuthType {
 }
 
 export interface MinAuthType {
+    _id: ObjectId;
     id: string;
     roles: string[] & defaultRoles[];
     status: "active" | "inactive" | "blocked";
@@ -66,9 +70,10 @@ export type PermissionsType = {
 }
 
 export interface roleType {
-    _id: string | defaultRoles;
-    name: string;
+    _id: ObjectId | string;
+    name: string | defaultRoles;
     description: string;
+    rank: number;
     permissions: PermissionsArrayType[];
     createdAt: Date;
     updatedAt: Date;

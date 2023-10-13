@@ -2,7 +2,7 @@ import { filterUsers } from '@/functions/user';
 import React from 'react'
 import { DataTable } from './data-table';
 import { getServerSession } from 'next-auth';
-import { nextAuthOptions } from '../api/auth/[...nextauth]/authOptions';
+import { nextAuthOptions } from '../../api/auth/[...nextauth]/authOptions';
 import { redirect } from 'next/navigation';
 
 export default async function page({ }: {}) {
@@ -12,7 +12,6 @@ export default async function page({ }: {}) {
         return redirect('/?error=unauthorized&redirected=true&redirectedFrom=members');
     } else if (!session.user.permissions?.user_add
         || !session.user.permissions?.user_delete
-        || !session.user.permissions?.user_delete_others
         || !session.user.permissions?.user_edit
         || !session.user.permissions?.user_edit_others
         || !session.user.permissions?.user_view
@@ -20,11 +19,11 @@ export default async function page({ }: {}) {
         return redirect('/?error=unauthorized&redirected=true&redirectedFrom=members');
     }
 
-    const data = await filterUsers({}) || [];
+    const data = await filterUsers({}) || { data: [] };
 
     return (
         <div className="sm:container mx-auto sm:py-5 h-full">
-            <DataTable initial_data={data} />
+            <DataTable initial_data={data.data || []} />
         </div>
     )
 }
