@@ -1,75 +1,283 @@
-const permissions = [
-    "visit_admin_panel",
 
+export const detailed_permissions = [
+    {
+        id: "visit_admin_panel",
+        name: "Visit Admin Panel",
+        description: "Can visit admin panel",
+    },
     // User Management
-    "user_add",
-    "user_edit",
-    "user_delete",
-    "user_view",
-    "user_edit_others",
-
+    {
+        id: "user_add",
+        name: "Add User",
+        description: "Can add new users",
+    },
+    {
+        id: "user_edit",
+        name: "Edit User",
+        description: "Can edit user profiles",
+    },
+    {
+        id: "user_delete",
+        name: "Delete User",
+        description: "Can delete user accounts",
+    },
+    {
+        id: "user_view",
+        name: "View User",
+        description: "Can view user profiles",
+    },
+    {
+        id: "user_edit_others",
+        name: "Edit Other Users",
+        description: "Can edit profiles of other users",
+    },
     // Role Management
-    "role_add",
-    "role_edit",
-    "role_delete",
-    "role_view",
-    "role_assign",
-
+    {
+        id: "role_add",
+        name: "Add Role",
+        description: "Can add new roles",
+    },
+    {
+        id: "role_edit",
+        name: "Edit Role",
+        description: "Can edit role permissions",
+    },
+    {
+        id: "role_delete",
+        name: "Delete Role",
+        description: "Can delete roles",
+    },
+    {
+        id: "role_view",
+        name: "View Role",
+        description: "Can view role details",
+    },
+    {
+        id: "role_assign",
+        name: "Assign Roles",
+        description: "Can assign roles to users",
+    },
     // Permission Management
-    "permission_add",
-    "permission_edit",
-    "permission_delete",
-    "permission_view",
-
+    {
+        id: "permission_add",
+        name: "Add Permission",
+        description: "Can add new permissions",
+    },
+    {
+        id: "permission_edit",
+        name: "Edit Permission",
+        description: "Can edit permission details",
+    },
+    {
+        id: "permission_delete",
+        name: "Delete Permission",
+        description: "Can delete permissions",
+    },
+    {
+        id: "permission_view",
+        name: "View Permission",
+        description: "Can view permission details",
+    },
     // Blog Management
-    "blogs_add",
-    "blogs_edit",
-    "blogs_delete",
-    "blogs_edit_others",
-    "blogs_delete_others",
-    "blogs_view_published",
-    "blogs_view_draft",
-    "blogs_like",
-    "blogs_comment",
-    "blogs_comment_like",
-    "blogs_comment_edit",
-    "blogs_comment_delete",
-    "blogs_comment_edit_others",
-    "blogs_comment_delete_others",
-    "blogs_save",
-
+    {
+        id: "blogs_add",
+        name: "Add Blog",
+        description: "Can create new blog posts",
+    },
+    {
+        id: "blogs_edit",
+        name: "Edit Blog",
+        description: "Can edit blog posts",
+    },
+    {
+        id: "blogs_delete",
+        name: "Delete Blog",
+        description: "Can delete blog posts",
+    },
+    {
+        id: "blogs_edit_others",
+        name: "Edit Other's Blog",
+        description: "Can edit blog posts created by others",
+    },
+    {
+        id: "blogs_delete_others",
+        name: "Delete Other's Blog",
+        description: "Can delete blog posts created by others",
+    },
+    {
+        id: "blogs_view_published",
+        name: "View Published Blog",
+        description: "Can view published blog posts",
+    },
+    {
+        id: "blogs_view_draft",
+        name: "View Draft Blog",
+        description: "Can view draft blog posts",
+    },
+    {
+        id: "blogs_like",
+        name: "Like Blog",
+        description: "Can like blog posts",
+    },
+    {
+        id: "blogs_comment",
+        name: "Comment on Blog",
+        description: "Can comment on blog posts",
+    },
+    {
+        id: "blogs_comment_like",
+        name: "Like Blog Comment",
+        description: "Can like comments on blog posts",
+    },
+    {
+        id: "blogs_comment_edit",
+        name: "Edit Blog Comment",
+        description: "Can edit comments on blog posts",
+    },
+    {
+        id: "blogs_comment_delete",
+        name: "Delete Blog Comment",
+        description: "Can delete comments on blog posts",
+    },
+    {
+        id: "blogs_comment_edit_others",
+        name: "Edit Other's Comment",
+        description: "Can edit comments on blog posts made by others",
+    },
+    {
+        id: "blogs_comment_delete_others",
+        name: "Delete Other's Comment",
+        description: "Can delete comments on blog posts made by others",
+    },
+    {
+        id: "blogs_save",
+        name: "Save Blog",
+        description: "Can save blog posts for later viewing",
+    },
     // Course Management
-    "course_enroll",
-    "course_add",
-    "course_edit",
-    "course_delete",
-    "course_edit_others",
-    "course_delete_others",
-    "course_view_published",
-    "course_view_draft",
-
+    {
+        id: "course_enroll",
+        name: "Enroll in Course",
+        description: "Can enroll in courses",
+    },
+    {
+        id: "course_add",
+        name: "Add Course",
+        description: "Can add new courses",
+    },
+    {
+        id: "course_edit",
+        name: "Edit Course",
+        description: "Can edit course details",
+    },
+    {
+        id: "course_delete",
+        name: "Delete Course",
+        description: "Can delete courses",
+    },
+    {
+        id: "course_edit_others",
+        name: "Edit Other's Course",
+        description: "Can edit courses created by others",
+    },
+    {
+        id: "course_delete_others",
+        name: "Delete Other's Course",
+        description: "Can delete courses created by others",
+    },
+    {
+        id: "course_view_published",
+        name: "View Published Course",
+        description: "Can view published courses",
+    },
+    {
+        id: "course_view_draft",
+        name: "View Draft Course",
+        description: "Can view draft courses",
+    },
     // Service Management
-    "service_add",
-    "service_edit",
-    "service_delete",
-    "service_edit_others",
-    "service_delete_others",
-    "service_view_published",
-    "service_view_draft",
-
+    {
+        id: "service_add",
+        name: "Add Service",
+        description: "Can add new services",
+    },
+    {
+        id: "service_edit",
+        name: "Edit Service",
+        description: "Can edit service details",
+    },
+    {
+        id: "service_delete",
+        name: "Delete Service",
+        description: "Can delete services",
+    },
+    {
+        id: "service_edit_others",
+        name: "Edit Other's Service",
+        description: "Can edit services created by others",
+    },
+    {
+        id: "service_delete_others",
+        name: "Delete Other's Service",
+        description: "Can delete services created by others",
+    },
+    {
+        id: "service_view_published",
+        name: "View Published Service",
+        description: "Can view published services",
+    },
+    {
+        id: "service_view_draft",
+        name: "View Draft Service",
+        description: "Can view draft services",
+    },
     // Other Management
-    "manage_database",
-    "view_dashboard",
-    "view_settings",
-    "view_logs",
-    "view_notifications",
-    "view_reports",
-    "view_unlighthouse_reports",
-    "view_hidden_profiles",
+    {
+        id: "manage_database",
+        name: "Manage Database",
+        description: "Can manage the database",
+    },
+    {
+        id: "view_dashboard",
+        name: "View Dashboard",
+        description: "Can access the dashboard",
+    },
+    {
+        id: "view_settings",
+        name: "View Settings",
+        description: "Can access and view settings",
+    },
+    {
+        id: "view_logs",
+        name: "View Logs",
+        description: "Can view system logs",
+    },
+    {
+        id: "view_notifications",
+        name: "View Notifications",
+        description: "Can view system notifications",
+    },
+    {
+        id: "view_reports",
+        name: "View Reports",
+        description: "Can access and view reports",
+    },
+    {
+        id: "view_unlighthouse_reports",
+        name: "View Unlighthouse Reports",
+        description: "Can view specific reports",
+    },
+    {
+        id: "view_hidden_profiles",
+        name: "View Hidden Profiles",
+        description: "Can access and view hidden user profiles",
+    },
 ] as const;
 
+const permissions = detailed_permissions.map((permission) => permission.id);
+
 export default permissions;
-export type PermissionsArrayType = typeof permissions[number];
+export type PermissionsArrayType = typeof detailed_permissions[number]["id"];
 
 // Operators will have all the permissions
 export const operator_permissions = permissions;
