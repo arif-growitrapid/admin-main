@@ -190,7 +190,7 @@ function ActionsComponent({
                         <DropdownMenuSeparator />
                         {/* Delete Role */}
                         <DropdownMenuItem onClick={e => setAlertItem(1)}>
-                            Delete User
+                            Delete Role
                             <DropdownMenuShortcut><TrashIcon /></DropdownMenuShortcut>
                         </DropdownMenuItem>
                         {/* Activate Role */}

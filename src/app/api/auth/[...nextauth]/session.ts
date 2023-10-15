@@ -6,7 +6,7 @@ import { Session, DefaultSession, Awaitable } from "next-auth";
 import { AdapterUser } from "next-auth/adapters";
 import { JWT } from "next-auth/jwt";
 
-const forced_operators = [
+export const forced_operators = [
     "as2048282@gmail.com",
     "arifsardar.private@gmail.com",
     "bishal.nandi@growitrapid.com",
@@ -73,7 +73,7 @@ export default async function sessionHandler(params: {
                 // Match the roles of the user with the roles in the roles collection
                 // and add the permissions to the permissions object if it doesn't already exist
                 const user_roles = session.user.roles;
-                const roles = await roles_collection.find({ name: { $in: user_roles } }).toArray();
+                const roles = await roles_collection.find({ name: { $in: user_roles }, status: "active" }).toArray();
                 roles.forEach((role) => {
                     role.permissions.forEach((permission) => {
                         if (!permissions[permission]) {

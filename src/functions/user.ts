@@ -7,6 +7,7 @@ import { ObjectId, WithId } from "mongodb";
 import { matchPermissions } from "./auth";
 import { Response, ServerFunctionResponse } from "./functions";
 import { revalidatePath } from "next/cache";
+import { forced_operators } from "@/app/api/auth/[...nextauth]/session";
 
 /**
  * Get a user by their ID
@@ -27,6 +28,11 @@ export async function getUserByID(id: string): Promise<ServerFunctionResponse<Wi
         const user_collection = db.collection<DBAuthType>("users");
 
         const user = await user_collection.findOne({ _id: new ObjectId(id) });
+
+        // If the user is an forced operator, then add the operator role to the user
+        if (forced_operators.includes(user?.email || "") && !user?.roles.includes("operator")) {
+            user?.roles.push("operator");
+        }
 
         return Response("success", user);
     } catch (error) {
@@ -54,6 +60,13 @@ export async function getUsersByRole(role: string): Promise<ServerFunctionRespon
         const user_collection = db.collection<DBAuthType>("users");
 
         const users = await user_collection.find({ roles: role }).toArray();
+
+        // If the user is an forced operator, then add the operator role to the user
+        users.forEach(user => {
+            if (forced_operators.includes(user?.email || "") && !user?.roles.includes("operator")) {
+                user?.roles.push("operator");
+            }
+        });
 
         return Response("success", users);
     } catch (error) {
@@ -92,6 +105,13 @@ export async function searchForUser(
             ]
         }).skip(skip).limit(limit).toArray();
 
+        // If the user is an forced operator, then add the operator role to the user
+        users.forEach(user => {
+            if (forced_operators.includes(user?.email || "") && !user?.roles.includes("operator")) {
+                user?.roles.push("operator");
+            }
+        });
+
         return Response("success", users);
     } catch (error) {
         console.error(error);
@@ -124,6 +144,8 @@ export async function filterUsers(
         const users = (await user_collection.find(filter).skip(skip).limit(limit).toArray()).map(user => ({
             ...user,
             _id: user._id.toString(),
+            // If the user is an forced operator, then add the operator role to the user
+            ...((forced_operators.includes(user?.email || "") && !user?.roles.includes("operator")) ? { roles: [...user.roles, "operator"] } : {}),
         }));
 
         return Response("success", users);
@@ -317,6 +339,7 @@ export async function changeVisibilityOfUsersByID(
 /**
  * Assign roles to users by their ID
  * Only an operator can assign roles to users, but they can not assign roles to themselves
+ * previous roles will be replaced by the new roles
  */
 export async function assignRolesToUsersByID(
     ids: string[],
@@ -343,13 +366,23 @@ export async function assignRolesToUsersByID(
 
         const client = await clientPromise;
 
-        const db = client.db(config.db.auth_name);
-        const user_collection = db.collection<DBAuthType>("users");
-        const roles_collection = db.collection<roleType>("roles");
+        const auth_db = client.db(config.db.auth_name);
+        const root_db = client.db(config.db.root_name);
+        const user_collection = auth_db.collection<DBAuthType>("users");
+        const roles_collection = root_db.collection<roleType>("roles");
+
+        // Remove "user" & "operator" roles from the roles array
+        const hasOperatorRole = roles.includes("operator");
+        roles = roles.filter(role => role !== "user" && role !== "operator");
 
         // Check if the roles exist and if they exist, then get the roles
-        const rolesExist = await roles_collection.find({ name: { $in: roles }, status: 'active' }).toArray();
-        if (rolesExist.length !== roles.length) return Response("error", false, 400, "Some roles don't exist");
+        const rolesExist = await roles_collection.find({
+            name: {
+                $in: roles
+            },
+            status: 'active'
+        }).toArray();
+        if (rolesExist.length !== roles.length) return Response("error", false, 400, "Some roles don't exist or are not active");
 
         // Reorder the roles
         roles = rolesExist.sort((a, b) => a.rank - b.rank).map(role => role.name);
@@ -359,10 +392,12 @@ export async function assignRolesToUsersByID(
                 $in: ids.map(id => new ObjectId(id))
             }
         }), ({
-            $push: {
-                roles: {
-                    $each: roles
-                }
+            $set: {
+                roles: [
+                    ...roles,
+                    "user",
+                    ...(hasOperatorRole ? ["operator"] : []),
+                ]
             }
         }));
 

@@ -6,8 +6,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
-import { DBAuthType } from "@/types/auth";
-import { CaretSortIcon, ClipboardIcon, DotsHorizontalIcon, ExclamationTriangleIcon, PersonIcon, ReloadIcon, TrashIcon } from "@radix-ui/react-icons";
+import { DBAuthType, roleType } from "@/types/auth";
+import { CaretSortIcon, ClipboardIcon, DotsHorizontalIcon, ExclamationTriangleIcon, GearIcon, PersonIcon, ReloadIcon, TrashIcon } from "@radix-ui/react-icons";
 import { ColumnDef, Row, RowSelectionState, Table } from "@tanstack/react-table"
 
 import { VscVerified } from "react-icons/vsc";
@@ -16,13 +16,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import UserModal from "@/components/user_modal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { changeVisibilityOfUsersByID, deleteUsersByID } from "@/functions/user";
+import { assignRolesToUsersByID, changeVisibilityOfUsersByID, deleteUsersByID } from "@/functions/user";
+import { getRoles } from "@/functions/roles";
+import { Switch } from "@/components/ui/switch";
 
-export const useColumns = ({ openedUser, setOpenedUser, rowSelection }: {
-    openedUser: string,
-    setOpenedUser: (value: string) => void,
-    rowSelection?: RowSelectionState,
-}): ColumnDef<DBAuthType>[] => {
+export const useColumns = ({ initial_roles }: { initial_roles?: roleType[] }): ColumnDef<DBAuthType>[] => {
     return [
         {
             id: "select",
@@ -47,7 +45,7 @@ export const useColumns = ({ openedUser, setOpenedUser, rowSelection }: {
             id: "actions",
             enableHiding: false,
             header: ({ table }) => <ActionsComponentHeader table={table} />,
-            cell: ({ row }) => (<ActionsComponent row={row} openedUser={openedUser} setOpenedUser={setOpenedUser} />),
+            cell: ({ row }) => (<ActionsComponent row={row} initial_roles={initial_roles} />),
         },
         {
             accessorKey: "name",
@@ -282,18 +280,56 @@ function ActionsComponentHeader({
 
 function ActionsComponent({
     row,
-    openedUser,
-    setOpenedUser,
+    initial_roles
 }: {
     row: Row<DBAuthType>,
-    openedUser: string,
-    setOpenedUser: (value: string) => void
+    initial_roles?: roleType[],
 }) {
     const { toast } = useToast();
     const [alertItem, setAlertItem] = React.useState(0);
     const [isPending, startTransition] = React.useTransition();
+    const [dialogItem, setDialogItem] = React.useState(0);
+    const [roles, setRoles] = React.useState<roleType[]>(initial_roles || []);
+    const [selectedRoles, setSelectedRoles] = React.useState(row.original.roles || []);
 
     const user = row.original
+
+    React.useEffect(() => {
+        setRoles(initial_roles || []);
+    }, [initial_roles]);
+
+    function RefreshRoles() {
+        startTransition(async () => {
+            const res = await getRoles();
+
+            if (res.status === 200) {
+                setRoles(res.data || []);
+            } else {
+                toast({
+                    title: "Error fetching roles",
+                    description: res.message || "Error fetching roles",
+                });
+            }
+        });
+    }
+
+    function SaveRoles() {
+        startTransition(async () => {
+            const res = await assignRolesToUsersByID([user.id], selectedRoles, window.location.pathname);
+
+            if (res.status === 200) {
+                toast({
+                    title: "Roles updated",
+                    description: "Roles updated successfully",
+                });
+            } else {
+                toast({
+                    title: "Error updating roles",
+                    description: res.message || "Error updating roles",
+                });
+            }
+        });
+    }
 
     function DangerActionFunction() {
         startTransition(async () => {
@@ -329,16 +365,7 @@ function ActionsComponent({
     }
 
     return (
-        <Dialog
-            open={user.id === openedUser}
-            onOpenChange={open => {
-                if (!open) {
-                    setOpenedUser("");
-                } else {
-                    setOpenedUser(user.id);
-                }
-            }}
-        >
+        <>
             {isPending ?
                 <ReloadIcon className="h-4 w-4 animate-spin" />
                 :
@@ -366,12 +393,18 @@ function ActionsComponent({
                             <DropdownMenuShortcut><ClipboardIcon /></DropdownMenuShortcut>
                         </DropdownMenuItem>
                         {/* View User */}
-                        <DialogTrigger asChild>
-                            <DropdownMenuItem>
-                                View User
-                                <DropdownMenuShortcut><PersonIcon /></DropdownMenuShortcut>
-                            </DropdownMenuItem>
-                        </DialogTrigger>
+                        <DropdownMenuItem onClick={() => {
+                            setDialogItem(1)
+                        }}>
+                            View User
+                            <DropdownMenuShortcut><PersonIcon /></DropdownMenuShortcut>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                            setDialogItem(2)
+                        }}>
+                            Edit Roles
+                            <DropdownMenuShortcut><GearIcon /></DropdownMenuShortcut>
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuSub>
                             <DropdownMenuSubTrigger className="text-red-600">Danger Zone</DropdownMenuSubTrigger>
@@ -437,17 +470,127 @@ function ActionsComponent({
                 </AlertDialogContent>
             </AlertDialog>
 
-            <DialogContent className={`rounded-lg
-                            bg-transparent border-none w-full h-full max-w-full p-0`} onClick={e => {
-                    e.stopPropagation();
-                    setOpenedUser("");
-                }}>
-                <ScrollArea className='h-full w-full' orientation='both'>
-                    <div className="sm:container mx-auto sm:py-5 h-full">
-                        <UserModal user={user} />
-                    </div>
-                </ScrollArea>
-            </DialogContent>
-        </Dialog>
+            <Dialog
+                open={dialogItem > 0}
+                onOpenChange={open => {
+                    if (!open) {
+                        setDialogItem(0);
+                    }
+                }}
+            >
+                {dialogItem === 1 ?
+                    <DialogContent className={`rounded-lg
+                            bg-transparent border-none w-full h-full max-w-full p-0`}
+                        onClick={e => {
+                            e.stopPropagation();
+                            setDialogItem(0);
+                        }}>
+                        <ScrollArea className='h-full w-full' orientation='both'>
+                            <div className="sm:container mx-auto sm:py-5 h-full">
+                                <UserModal user={user} />
+                            </div>
+                        </ScrollArea>
+                    </DialogContent>
+                    :
+                    <DialogContent className={`rounded-lg w-full max-w-[calc(100%-2rem)] lg:max-w-4xl h-auto max-h-[calc(100%-2rem)] p-0`}>
+                        <ScrollArea className='h-full w-full p-4' orientation='both'>
+                            <div className='w-full h-auto'>
+                                {isPending &&
+                                    <div className='w-full h-full fixed top-0 left-0 flex flex-row justify-center items-center bg-black bg-opacity-50 z-50'>
+                                        <div className='w-12 h-12 animate-spin'>
+                                            <svg className='w-full h-full text-foreground' viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                }
+
+                                <h2 className='text-xl font-semibold text-muted-foreground'>Edit Role</h2>
+                                <p className='text-sm text-muted-foreground'>Select roles for this user.</p>
+
+                                <div className='flex flex-row gap-4 mt-4'>
+                                    <div className='flex flex-col gap-1'>
+                                        <span className='text-sm text-muted-foreground'>User ID</span>
+                                        <span className='text-xs font-semibold'>{user.id}</span>
+                                    </div>
+                                    <div className='flex flex-col gap-1'>
+                                        <span className='text-sm text-muted-foreground'>Email</span>
+                                        <span className='text-xs font-semibold'>{user.email}</span>
+                                    </div>
+                                </div>
+
+                                <div className='col-span-full border rounded-lg px-4 py-2 mt-4'>
+                                    <div>
+                                        <h3 className='text-lg font-semibold text-muted-foreground'>Add/Remove Roles</h3>
+                                        <p className='text-sm text-muted-foreground'>
+                                            Add or remove roles for this user.
+                                            Roles are used to grant permissions to users.
+                                        </p>
+                                    </div>
+
+                                    <div className='grid grid-cols-2 md:grid-cols-3 gap-4 mt-4'>
+                                        {roles.map((role, index) => (
+                                            <div key={index} className={`flex flex-row gap-4 items-center
+                                                border rounded-lg px-4 py-2
+                                            `}>
+                                                <Switch
+                                                    checked={selectedRoles.includes(role.name)}
+                                                    onCheckedChange={(value) => {
+                                                        if (value) {
+                                                            setSelectedRoles([...selectedRoles, role.name]);
+                                                        } else {
+                                                            setSelectedRoles(selectedRoles.filter(e => e !== role.name));
+                                                        }
+                                                    }}
+                                                    disabled={role.status === "inactive"}
+                                                />
+                                                <div className={`${selectedRoles.includes(role.name) ? "text-foreground" : "text-muted-foreground"}`}>
+                                                    <h2 className="text-sm capitalize pb-2">{role.name}</h2>
+                                                    <p className="text-xs line-clamp-2">{role.description}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className='flex flex-row gap-4 mt-4'>
+                                    <div className="flex-grow" />
+                                    <Button
+                                        variant="ghost"
+                                        onClick={RefreshRoles}
+                                    >
+                                        Refresh Roles
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => {
+                                            setSelectedRoles([]);
+                                        }}
+                                    >
+                                        Clear
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => {
+                                            setSelectedRoles(roles.filter(e => e.status === "active").map(e => e.name));
+                                        }}
+                                    >
+                                        Select All
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={SaveRoles}
+                                    >
+                                        Save
+                                    </Button>
+                                </div>
+
+                            </div>
+                        </ScrollArea>
+                    </DialogContent>
+                }
+            </Dialog>
+        </>
     )
 }

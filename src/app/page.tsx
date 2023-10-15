@@ -1,7 +1,6 @@
 "use client";
 import CommingSoon from "@/components/svg/comming_soon";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { signIn, useSession } from "next-auth/react";
 
 export default function Home() {

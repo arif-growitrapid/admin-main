@@ -52,11 +52,6 @@ export const detailed_permissions = [
         name: "View Role",
         description: "Can view role details",
     },
-    {
-        id: "role_assign",
-        name: "Assign Roles",
-        description: "Can assign roles to users",
-    },
     // Permission Management
     {
         id: "permission_add",
@@ -197,6 +192,11 @@ export const detailed_permissions = [
     },
     // Service Management
     {
+        id: "service_enroll",
+        name: "Enroll in Service",
+        description: "Can enroll in services",
+    },
+    {
         id: "service_add",
         name: "Add Service",
         description: "Can add new services",
@@ -230,6 +230,21 @@ export const detailed_permissions = [
         id: "service_view_draft",
         name: "View Draft Service",
         description: "Can view draft services",
+    },
+    {
+        id: "service_like",
+        name: "Like Service",
+        description: "Can like services",
+    },
+    {
+        id: "service_comment",
+        name: "Comment on Service",
+        description: "Can comment on services",
+    },
+    {
+        id: "service_save",
+        name: "Save Service",
+        description: "Can save services for later viewing",
     },
     // Other Management
     {

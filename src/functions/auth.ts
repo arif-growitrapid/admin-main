@@ -14,6 +14,7 @@ export async function matchPermissions(
     session: any;
     matches: typeof permissions;
     isMatched: boolean;
+    isFullyMatched: boolean;
 } | null> {
     try {
         const session = await getServerSession(nextAuthOptions);
@@ -31,6 +32,7 @@ export async function matchPermissions(
             session,
             matches,
             isMatched: matches.length > 0,
+            isFullyMatched: matches.length === permissions.length,
         };
 
     }

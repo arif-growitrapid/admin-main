@@ -60,7 +60,10 @@ export async function getRoles(): Promise<ServerFunctionResponse<roleType[] | nu
         const db = client.db(config.db.root_name);
         const roles_collection = db.collection<roleType>("roles");
 
-        const serverRoles = await roles_collection.find().toArray();
+        const serverRoles = (await roles_collection.find().toArray()).map(role => ({
+            ...role,
+            _id: role._id.toString()
+        }));
 
         const roles = [...default_roles, ...serverRoles];
 

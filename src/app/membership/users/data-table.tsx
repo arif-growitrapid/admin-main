@@ -31,22 +31,23 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useColumns } from "./columns"
 import { VscRefresh } from "react-icons/vsc"
 import { Skeleton } from "@/components/ui/skeleton"
-import { revalidatePath } from "next/cache"
 import { filterUsers } from "@/functions/user"
+import { roleType } from "@/types/auth"
 
 interface DataTableProps<TData, TValue> {
-    initial_data: TData[]
+    initial_data: TData[],
+    initial_roles?: roleType[],
 }
 
 export function DataTable<TData, TValue>({
     initial_data,
+    initial_roles,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnFilterBy, setColumnFilterBy] = React.useState("email");
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
-    const [openedUser, setOpenedUser] = React.useState("");
     const [data, setData] = React.useState<TData[]>(initial_data);
     const [isPending, startTransition] = React.useTransition();
 
@@ -64,9 +65,7 @@ export function DataTable<TData, TValue>({
     }, [initial_data]);
 
     const columns = useColumns({
-        openedUser,
-        setOpenedUser,
-        rowSelection
+        initial_roles
     }) as ColumnDef<TData, TValue>[]
 
     const table = useReactTable({
