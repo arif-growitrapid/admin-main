@@ -3,6 +3,7 @@ import Image from 'next/image';
 import React from 'react'
 
 import Logo from "@/assets/logo/logo_light.svg"
+import { signIn } from 'next-auth/react';
 
 type Props = {}
 
@@ -53,6 +54,19 @@ export default function Login({ }: Props) {
                             Sign In on growitrapid.com
                         </a>
                     </div>
+
+                    <p className='mt-8 font-medium text-xs text-muted-foreground'>
+                        For Development Purposes Only
+                    </p>
+
+                    <button
+                        className='block w-full px-4 py-4 font-medium text-white rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-lg sm:text-base'
+                        onClick={e => {
+                            signIn('google', { redirect: false })
+                        }}
+                    >
+                        Sign In with Google
+                    </button>
                 </div>
 
             </div>

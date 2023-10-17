@@ -24,8 +24,11 @@ export default function SearchDialog({ children }: Props) {
     }, [pathname]);
 
     React.useEffect(() => {
-        function closeDialog() {
-            setOpen(false);
+        function onBackPressed(e: PopStateEvent) {
+            if (open) {
+                e.preventDefault();
+                setOpen(false);
+            }
         }
 
         const down = (e: KeyboardEvent) => {
@@ -34,9 +37,12 @@ export default function SearchDialog({ children }: Props) {
                 setOpen((open) => !open)
             }
         }
+
         document.addEventListener("keydown", down)
+        window.addEventListener("popstate", onBackPressed)
         return () => {
             document.removeEventListener("keydown", down);
+            window.removeEventListener("popstate", onBackPressed)
         }
     }, [])
 
@@ -52,10 +58,18 @@ export default function SearchDialog({ children }: Props) {
                 return child
             })}
 
-            <CommandDialog open={open} onOpenChange={setOpen}>
+            <CommandDialog
+                open={open}
+                onOpenChange={setOpen}
+                contentProps={{
+                    className: `h-full max-h-full max-w-full
+                        sm:max-h-[calc(100%-4rem)] sm:max-w-[calc(100%-4rem)]
+                        md:h-auto md:max-h-auto md:max-w-[40rem] md:w-full overflow-hidden p-0`
+                }}
+            >
                 <CommandInput placeholder="Type a command or search..." />
 
-                <CommandList>
+                <CommandList className='flex-grow max-h-full'>
                     <CommandEmpty>No results found.</CommandEmpty>
 
                     <CommandGroup heading="Navigation">

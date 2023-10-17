@@ -8,7 +8,7 @@
     --form-label-font-size: 1rem;
     --form-label-color: hsl(var(--foreground) / 60%);
     --form-label-bg-color: var(--form-bg-color);
-    --form-active-color: #fff;
+    --form-active-color: var(--form-text-color);
     --form-input-max-width: 100%;
 
     width: 100%;

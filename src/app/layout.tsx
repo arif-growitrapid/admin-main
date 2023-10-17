@@ -5,14 +5,12 @@ import { cookies } from 'next/headers';
 import Providers from '@/redux/provider'
 
 import './globals.css'
-import Structure from '@/components/structure'
+import Structure from '@/app/structure'
 import config from '@/config';
 import { Toaster } from '@/components/ui/toaster';
 import { getServerSession } from 'next-auth';
 import { nextAuthOptions } from './api/auth/[...nextauth]/authOptions';
 import { Icon } from 'next/dist/lib/metadata/types/metadata-types';
-import matchPermissionToViewPage from '@/functions/match_permission_to_view_page';
-import Login from '@/components/login';
 // import '@/components/editor/wysiwyg/style.scss'
 
 // Add your custom fonts here
@@ -20,42 +18,22 @@ const inter = Inter({ subsets: ['latin'] })
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     const session = await getServerSession(nextAuthOptions);
-    const match = await matchPermissionToViewPage(
-        session,
-        [
-            "view_dashboard",
-            "visit_admin_panel"
-        ],
-        ["view_dashboard", "visit_admin_panel"]
-    );
 
     const cookieStore = cookies();
     const theme = cookieStore.get(config.theme_key);
 
-    if (match && match.isFullyRequiredMatched)
-        return (
-            <html lang='en'>
-                <body className={`${inter.className} ${theme?.value || "dark"}`}>
-                    <Providers theme={theme?.value} session={session}>
-                        <Structure theme={theme?.value || ""}>
-                            {children}
-                            <Toaster />
-                        </Structure>
-                    </Providers>
-                </body>
-            </html>
-        )
-    else
-        return (
-            <html lang='en'>
-                <body className={`${inter.className}`}>
-                    <Providers theme={theme?.value} session={session}>
-                        <Login />
+    return (
+        <html lang='en'>
+            <body className={`${inter.className} ${theme?.value || "dark"}`}>
+                <Providers theme={theme?.value} session={session}>
+                    <Structure theme={theme?.value || ""}>
+                        {children}
                         <Toaster />
-                    </Providers>
-                </body>
-            </html>
-        );
+                    </Structure>
+                </Providers>
+            </body>
+        </html>
+    )
 }
 
 /**

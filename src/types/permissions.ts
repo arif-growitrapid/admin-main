@@ -3,289 +3,289 @@ export const detailed_permissions = [
     {
         id: "visit_admin_panel",
         name: "Visit Admin Panel",
-        description: "Can visit admin panel",
+        description: "Access and navigate the administrative control panel with system-wide settings."
     },
     // User Management
     {
         id: "user_add",
         name: "Add User",
-        description: "Can add new users",
+        description: "Privilege to create new user accounts with specified roles and permissions."
     },
     {
         id: "user_edit",
         name: "Edit User",
-        description: "Can edit user profiles",
+        description: "Modify and update user profiles, including personal and access details."
     },
     {
         id: "user_delete",
         name: "Delete User",
-        description: "Can delete user accounts",
+        description: "Ability to permanently remove user accounts from the system."
     },
     {
         id: "user_view",
         name: "View User",
-        description: "Can view user profiles",
+        description: "Permission to see user profiles, including their roles and activity."
     },
     {
         id: "user_edit_others",
         name: "Edit Other Users",
-        description: "Can edit profiles of other users",
+        description: "Modify profiles of other users, subject to specific access permissions."
     },
     // Role Management
     {
         id: "role_add",
         name: "Add Role",
-        description: "Can add new roles",
+        description: "Create new roles with defined sets of permissions and assign them to users."
     },
     {
         id: "role_edit",
         name: "Edit Role",
-        description: "Can edit role permissions",
+        description: "Alter role permissions, affecting what actions users with that role can perform."
     },
     {
         id: "role_delete",
         name: "Delete Role",
-        description: "Can delete roles",
+        description: "Remove roles, affecting users' access and permissions associated with the role."
     },
     {
         id: "role_view",
         name: "View Role",
-        description: "Can view role details",
+        description: "Review and access details of roles within the system."
     },
     // Permission Management
     {
         id: "permission_add",
         name: "Add Permission",
-        description: "Can add new permissions",
+        description: "Introduce new permissions for fine-grained control over user actions."
     },
     {
         id: "permission_edit",
         name: "Edit Permission",
-        description: "Can edit permission details",
+        description: "Modify existing permissions, changing access rights for users or roles."
     },
     {
         id: "permission_delete",
         name: "Delete Permission",
-        description: "Can delete permissions",
+        description: "Remove a permission, affecting user capabilities and access."
     },
     {
         id: "permission_view",
         name: "View Permission",
-        description: "Can view permission details",
+        description: "Inspect the details and scope of specific permissions."
     },
     // Blog Management
     {
         id: "blogs_add",
         name: "Add Blog",
-        description: "Can create new blog posts",
+        description: "Create and publish new blog posts, sharing information and insights."
     },
     {
         id: "blogs_edit",
         name: "Edit Blog",
-        description: "Can edit blog posts",
+        description: "Modify and update existing blog posts, refining content and information."
     },
     {
         id: "blogs_delete",
         name: "Delete Blog",
-        description: "Can delete blog posts",
+        description: "Remove published blog posts from the platform."
     },
     {
         id: "blogs_edit_others",
         name: "Edit Other's Blog",
-        description: "Can edit blog posts created by others",
+        description: "Edit and update blog posts created by other users, if allowed."
     },
     {
         id: "blogs_delete_others",
         name: "Delete Other's Blog",
-        description: "Can delete blog posts created by others",
+        description: "Remove blog posts created by other users, subject to permissions."
     },
     {
         id: "blogs_view_published",
         name: "View Published Blog",
-        description: "Can view published blog posts",
+        description: "Access and read published blog posts, gaining insights and information."
     },
     {
         id: "blogs_view_draft",
         name: "View Draft Blog",
-        description: "Can view draft blog posts",
+        description: "View unpublished, draft blog posts for review and editing."
     },
     {
         id: "blogs_like",
         name: "Like Blog",
-        description: "Can like blog posts",
+        description: "Express approval and appreciation for blog posts through 'likes.'"
     },
     {
         id: "blogs_comment",
         name: "Comment on Blog",
-        description: "Can comment on blog posts",
+        description: "Engage with blog posts by leaving comments and feedback."
     },
     {
         id: "blogs_comment_like",
         name: "Like Blog Comment",
-        description: "Can like comments on blog posts",
+        description: "Show appreciation for specific comments on blog posts."
     },
     {
         id: "blogs_comment_edit",
         name: "Edit Blog Comment",
-        description: "Can edit comments on blog posts",
+        description: "Revise and improve comments made on blog posts."
     },
     {
         id: "blogs_comment_delete",
         name: "Delete Blog Comment",
-        description: "Can delete comments on blog posts",
+        description: "Remove comments left on blog posts, subject to permissions."
     },
     {
         id: "blogs_comment_edit_others",
         name: "Edit Other's Comment",
-        description: "Can edit comments on blog posts made by others",
+        description: "Edit comments made by other users on blog posts, if allowed."
     },
     {
         id: "blogs_comment_delete_others",
         name: "Delete Other's Comment",
-        description: "Can delete comments on blog posts made by others",
+        description: "Remove comments made by other users on blog posts, subject to permissions."
     },
     {
         id: "blogs_save",
         name: "Save Blog",
-        description: "Can save blog posts for later viewing",
+        description: "Bookmark and save blog posts for future reference and viewing."
     },
     // Course Management
     {
         id: "course_enroll",
         name: "Enroll in Course",
-        description: "Can enroll in courses",
+        description: "Register for and join courses, accessing educational content and materials."
     },
     {
         id: "course_add",
         name: "Add Course",
-        description: "Can add new courses",
+        description: "Create new courses, offering educational content and resources to users."
     },
     {
         id: "course_edit",
         name: "Edit Course",
-        description: "Can edit course details",
+        description: "Modify and update course details, improving the educational experience."
     },
     {
         id: "course_delete",
         name: "Delete Course",
-        description: "Can delete courses",
+        description: "Remove courses from the platform, affecting user access to educational content."
     },
     {
         id: "course_edit_others",
         name: "Edit Other's Course",
-        description: "Can edit courses created by others",
+        description: "Modify courses created by other users, if allowed by permissions."
     },
     {
         id: "course_delete_others",
         name: "Delete Other's Course",
-        description: "Can delete courses created by others",
+        description: "Remove courses created by other users, subject to permissions."
     },
     {
         id: "course_view_published",
         name: "View Published Course",
-        description: "Can view published courses",
+        description: "Access and explore published courses, acquiring knowledge and skills."
     },
     {
         id: "course_view_draft",
         name: "View Draft Course",
-        description: "Can view draft courses",
+        description: "Review and access unpublished, draft courses for development and improvement."
     },
     // Service Management
     {
         id: "service_enroll",
         name: "Enroll in Service",
-        description: "Can enroll in services",
+        description: "Register for and utilize specific services offered through the platform."
     },
     {
         id: "service_add",
         name: "Add Service",
-        description: "Can add new services",
+        description: "Create and offer new services, delivering value to platform users."
     },
     {
         id: "service_edit",
         name: "Edit Service",
-        description: "Can edit service details",
+        description: "Modify and update service details, enhancing the service offering."
     },
     {
         id: "service_delete",
         name: "Delete Service",
-        description: "Can delete services",
+        description: "Remove services from the platform, affecting user access to those services."
     },
     {
         id: "service_edit_others",
         name: "Edit Other's Service",
-        description: "Can edit services created by others",
+        description: "Modify services created by other users, if permitted by permissions."
     },
     {
         id: "service_delete_others",
         name: "Delete Other's Service",
-        description: "Can delete services created by others",
+        description: "Remove services created by other users, subject to specific permissions."
     },
     {
         id: "service_view_published",
         name: "View Published Service",
-        description: "Can view published services",
+        description: "Access and explore published services, benefiting from their offerings."
     },
     {
         id: "service_view_draft",
         name: "View Draft Service",
-        description: "Can view draft services",
+        description: "Review and access unpublished, draft services for improvements."
     },
     {
         id: "service_like",
         name: "Like Service",
-        description: "Can like services",
+        description: "Express approval and appreciation for specific services through 'likes.'"
     },
     {
         id: "service_comment",
         name: "Comment on Service",
-        description: "Can comment on services",
+        description: "Engage with services by leaving comments and feedback."
     },
     {
         id: "service_save",
         name: "Save Service",
-        description: "Can save services for later viewing",
+        description: "Bookmark and save services for future reference and utilization."
     },
     // Other Management
     {
         id: "manage_database",
         name: "Manage Database",
-        description: "Can manage the database",
+        description: "Oversee and control the database, ensuring data integrity and efficiency."
     },
     {
         id: "view_dashboard",
         name: "View Dashboard",
-        description: "Can access the dashboard",
+        description: "Access and interact with the system's dashboard for real-time insights."
     },
     {
         id: "view_settings",
         name: "View Settings",
-        description: "Can access and view settings",
+        description: "Explore and configure system settings to customize your experience."
     },
     {
         id: "view_logs",
         name: "View Logs",
-        description: "Can view system logs",
+        description: "Inspect system logs to track and analyze system activities and events."
     },
     {
         id: "view_notifications",
         name: "View Notifications",
-        description: "Can view system notifications",
+        description: "Access system notifications to stay informed about important updates."
     },
     {
         id: "view_reports",
         name: "View Reports",
-        description: "Can access and view reports",
+        description: "Access and review detailed reports to gain insights into system performance."
     },
     {
         id: "view_unlighthouse_reports",
         name: "View Unlighthouse Reports",
-        description: "Can view specific reports",
+        description: "Examine specific, in-depth reports for advanced data analysis."
     },
     {
         id: "view_hidden_profiles",
         name: "View Hidden Profiles",
-        description: "Can access and view hidden user profiles",
+        description: "Access and view user profiles that are not publicly visible."
     },
 ] as const;
 

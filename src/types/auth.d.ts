@@ -59,7 +59,6 @@ export interface MinAuthType {
     name: string | null;
     email: string;
     image: string | null;
-    bio: string | null;
     emailVerified: Date | boolean | null;
 };
 

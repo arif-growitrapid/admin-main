@@ -529,7 +529,7 @@ function ActionsComponent({
                                         </p>
                                     </div>
 
-                                    <div className='grid grid-cols-2 md:grid-cols-3 gap-4 mt-4'>
+                                    <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4'>
                                         {roles.map((role, index) => (
                                             <div key={index} className={`flex flex-row gap-4 items-center
                                                 border rounded-lg px-4 py-2
@@ -554,16 +554,16 @@ function ActionsComponent({
                                     </div>
                                 </div>
 
-                                <div className='flex flex-row gap-4 mt-4'>
+                                <div className='flex flex-row flex-wrap gap-4 mt-4'>
                                     <div className="flex-grow" />
                                     <Button
-                                        variant="ghost"
+                                        variant="secondary"
                                         onClick={RefreshRoles}
                                     >
                                         Refresh Roles
                                     </Button>
                                     <Button
-                                        variant="ghost"
+                                        variant="secondary"
                                         onClick={() => {
                                             setSelectedRoles([]);
                                         }}
@@ -571,7 +571,7 @@ function ActionsComponent({
                                         Clear
                                     </Button>
                                     <Button
-                                        variant="ghost"
+                                        variant="secondary"
                                         onClick={() => {
                                             setSelectedRoles(roles.filter(e => e.status === "active").map(e => e.name));
                                         }}
@@ -579,7 +579,8 @@ function ActionsComponent({
                                         Select All
                                     </Button>
                                     <Button
-                                        variant="outline"
+                                        variant="default"
+                                        className="bg-emerald-500 hover:bg-emerald-600 text-white"
                                         onClick={SaveRoles}
                                     >
                                         Save

@@ -173,22 +173,23 @@ export default function RoleEdit({
                         </p>
                     </div>
 
-                    <div className='grid grid-cols-2 md:grid-cols-3 gap-4 mt-4'>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4'>
                         {detailed_permissions.map((permission, index) => (
-                            <div key={index} className={`flex flex-row gap-4 items-center
-                                border rounded-lg px-4 py-2
-                            `}>
-                                <Switch
-                                    checked={data.permissions.includes(permission.id)}
-                                    onCheckedChange={(checked) => {
-                                        if (checked) {
-                                            setData({ ...data, permissions: [...data.permissions, permission.id] })
-                                        } else {
-                                            setData({ ...data, permissions: [...data.permissions.filter((p) => p !== permission.id)] })
-                                        }
-                                    }}
-                                />
-                                <label className={`text-sm ${data.permissions.includes(permission.id) ? "text-foreground" : "text-muted-foreground"}`}>{permission.name}</label>
+                            <div key={index} className={`border rounded-lg px-4 py-2`}>
+                                <div className='flex flex-row gap-4 items-center'>
+                                    <Switch
+                                        checked={data.permissions.includes(permission.id)}
+                                        onCheckedChange={(checked) => {
+                                            if (checked) {
+                                                setData({ ...data, permissions: [...data.permissions, permission.id] })
+                                            } else {
+                                                setData({ ...data, permissions: [...data.permissions.filter((p) => p !== permission.id)] })
+                                            }
+                                        }}
+                                    />
+                                    <label className={`text-sm font-medium ${data.permissions.includes(permission.id) ? "text-foreground" : "text-muted-foreground"}`}>{permission.name}</label>
+                                </div>
+                                <p className='text-xs text-muted-foreground mt-2'>{permission.description}</p>
                             </div>
                         ))}
                     </div>

@@ -13,7 +13,7 @@ export interface DBBlogPostType {
     createdAt: Date;
     updatedAt: Date;
 
-    author: ObjectId;
+    author: MinAuthType;
     tags: ObjectId[];
     categories: ObjectId[];
     comments: BlogCommentType[];
@@ -22,10 +22,10 @@ export interface DBBlogPostType {
     views: number;
     likes: number;
     saves: number;
-    viewed_by: ObjectId[];
+    viewed_by: MinAuthType[];
     viewed_by_ip: string[];
-    liked_by: ObjectId[];
-    saved_by: ObjectId[];
+    liked_by: MinAuthType[];
+    saved_by: MinAuthType[];
 
     is_seo_compatabile: boolean;
 }
