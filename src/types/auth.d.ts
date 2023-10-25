@@ -50,10 +50,9 @@ export interface AuthType {
 }
 
 export interface MinAuthType {
-    _id: ObjectId;
     id: string;
     roles: string[] & defaultRoles[];
-    status: "active" | "inactive" | "blocked";
+    status: "active" | "inactive" | "blocked" | "pending";
     createdAt: Date;
 
     name: string | null;

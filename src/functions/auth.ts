@@ -1,8 +1,10 @@
 "use server";
 
 import { nextAuthOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { AuthType, MinAuthType } from "@/types/auth";
 import { PermissionsArrayType } from "@/types/permissions";
-import { getServerSession } from "next-auth";
+import { ObjectId } from "mongodb";
+import { Session, getServerSession } from "next-auth";
 
 /**
  * If returns null, then the user is not logged in
@@ -11,7 +13,7 @@ import { getServerSession } from "next-auth";
 export async function matchPermissions(
     permissions: PermissionsArrayType[],
 ): Promise<{
-    session: any;
+    session: Session;
     matches: typeof permissions;
     isMatched: boolean;
     isFullyMatched: boolean;
@@ -39,6 +41,20 @@ export async function matchPermissions(
     catch (error) {
         console.error(error);
         return null;
+    }
+}
+
+export async function MinifyAuth(auth: AuthType): Promise<MinAuthType> {
+    return {
+        id: auth.id,
+        roles: auth.roles,
+        status: auth.status,
+        createdAt: auth.createdAt,
+
+        name: auth.name,
+        email: auth.email,
+        image: auth.image,
+        emailVerified: auth.emailVerified,
     }
 }
 

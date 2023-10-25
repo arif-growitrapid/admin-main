@@ -4,15 +4,35 @@ import React from 'react'
 type Props = {}
 
 export default function page({ }: Props) {
+    const zoom = 0.75
+
     return (
-        <div className='flex flex-col items-center justify-center gap-4 p-4 h-full'>
-            <h2 className='text-2xl font-medium text-center text-muted-foreground tracking-widest uppercase'>
-                Unlighthouse Report
-            </h2>
-            <CommingSoon
-                className='w-full h-auto max-w-[600px] mx-auto'
+        <div className='w-full h-full'>
+            <iframe
+                src="https://growitrapid.netlify.app/"
+                title="GrowItRapid"
+                style={{
+                    border: 'none',
+                    width: `${10000/(zoom*100)}%`,
+                    height: `${10000/(zoom*100)}%`,
+                    zoom: zoom,
+                    // @ts-ignore
+                    msZoom: zoom,
+                    MozZoom: zoom,
+                    OZoom: zoom,
+                    WebkitZoom: zoom,
+                    transform: `scale(${zoom})`,
+                    OTransform: `scale(${zoom})`,
+                    msTransform: `scale(${zoom})`,
+                    MozTransform: `scale(${zoom})`,
+                    WebkitTransform: `scale(${zoom})`,
+                    transformOrigin: '0 0',
+                    OTransformOrigin: '0 0',
+                    msTransformOrigin: '0 0',
+                    MozTransformOrigin: '0 0',
+                    WebkitTransformOrigin: '0 0',
+                }}
             />
-            <p className='text-lg font-medium text-muted-foreground text-center'>This feature is comming soon</p>
         </div>
     )
 }

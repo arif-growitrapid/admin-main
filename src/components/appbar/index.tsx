@@ -387,7 +387,7 @@ function SMNavigationMenuBar({ theme }: { theme: string }) {
 
                     <div className='w-full border-t '>
                         <p className='flex justify-between py-2'>
-                            <span className='text-xs text-muted-foreground'>Version: 1.0.0</span>
+                            <span className='text-xs text-muted-foreground'>Version: 1.0.1</span>
                             <span className='text-xs font-medium text-muted-foreground ml-1'>Developed by <a href='https://arif.thedev.id' target='_blank' className='hover:after:w-full after:w-0 after:h-[1px] after:bg-muted after:transition-all after:absolute after:-bottom-[2px] after:left-0 relative'>Arif Sardar</a></span>
                         </p>
                     </div>

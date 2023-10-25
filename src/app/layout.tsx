@@ -5,6 +5,11 @@ import { cookies } from 'next/headers';
 import Providers from '@/redux/provider'
 
 import './globals.css'
+import 'ckeditor5-custom-build/build/styles.css'
+import '@/components/editor/wysiwig/styles/dark-style.css'
+import '@/components/editor/wysiwig/styles/prism.css'
+import '@/components/editor/wysiwig/styles/content.scss'
+
 import Structure from '@/app/structure'
 import config from '@/config';
 import { Toaster } from '@/components/ui/toaster';

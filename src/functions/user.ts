@@ -2,9 +2,9 @@
 
 import config from "@/config";
 import clientPromise from "@/db/db";
-import { DBAuthType, roleType } from "@/types/auth";
+import { AuthType, DBAuthType, roleType } from "@/types/auth";
 import { ObjectId, WithId } from "mongodb";
-import { matchPermissions } from "./auth";
+import { MinifyAuth, matchPermissions } from "./auth";
 import { Response, ServerFunctionResponse } from "./functions";
 import { revalidatePath } from "next/cache";
 import { forced_operators } from "@/app/api/auth/[...nextauth]/session";
@@ -82,8 +82,10 @@ export async function searchForUser(
     query: string,
     limit: number = 10,
     skip: number = 0,
-): Promise<ServerFunctionResponse<WithId<DBAuthType>[] | null>> {
+): Promise<ServerFunctionResponse<Partial<DBAuthType>[] | null>> {
     try {
+        if (!query || query === "") return Response("error", null, 400, "Query is required");
+
         // Match permissions to view user
         // If the user has the permission to view user, then return the user
         const t = await matchPermissions(["user_view"]);
@@ -105,14 +107,24 @@ export async function searchForUser(
             ]
         }).skip(skip).limit(limit).toArray();
 
-        // If the user is an forced operator, then add the operator role to the user
-        users.forEach(user => {
+        const new_users = users.map<Partial<DBAuthType>>((user: WithId<DBAuthType>) => {
             if (forced_operators.includes(user?.email || "") && !user?.roles.includes("operator")) {
                 user?.roles.push("operator");
             }
+
+            return {
+                _id: user._id.toString(),
+                name: user.name,
+                email: user.email,
+                image: user.image,
+                bio: user.bio,
+                emailVerified: user.emailVerified,
+                roles: user.roles,
+                status: user.status,
+            };
         });
 
-        return Response("success", users);
+        return Response("success", new_users);
     } catch (error) {
         console.error(error);
         return Response("error", null, 500, "Internal server error");

@@ -21,16 +21,18 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import React from "react"
+import React, { useTransition } from "react"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { ChevronDownIcon } from "@radix-ui/react-icons"
+import { ChevronDownIcon, PlusIcon } from "@radix-ui/react-icons"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useColumns } from "./columns"
 import { VscRefresh } from "react-icons/vsc"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useToast } from "@/components/ui/use-toast"
+import { createBlog } from "@/functions/blogs"
 
 interface DataTableProps<TData, TValue> {
     initial_data: TData[]
@@ -41,11 +43,17 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-    const [columnFilterBy, setColumnFilterBy] = React.useState("email");
+    const [columnFilterBy, setColumnFilterBy] = React.useState("title");
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
-    const [openedUser, setOpenedUser] = React.useState("");
+    const [openedBlog, setopenedBlog] = React.useState("");
     const [data, setData] = React.useState<TData[]>(initial_data);
+    const [isPending, startTransition] = useTransition();
+    const {toast} = useToast();
+
+    React.useEffect(() => {
+        setData(initial_data);
+    }, [initial_data]);
 
     function refreshData() {
         setData([]);
@@ -54,9 +62,30 @@ export function DataTable<TData, TValue>({
         }, 1000);
     }
 
+    function createBlogFunc() {
+        startTransition(async () => {
+            const res = await createBlog(window.location.pathname);
+
+            if (res.status === 200) {
+                toast({
+                    title: "Blog created successfully.",
+                    description: "You can now edit your blog.",
+                    duration: 5000,
+                });
+            } else {
+                toast({
+                    title: "Error creating blog.",
+                    description: res.message,
+                    duration: 5000,
+                    variant: "destructive"
+                });
+            }
+        });
+    }
+
     const columns = useColumns({
-        openedUser,
-        setOpenedUser
+        openedBlog,
+        setopenedBlog
     }) as ColumnDef<TData, TValue>[]
 
     const table = useReactTable({
@@ -91,8 +120,8 @@ export function DataTable<TData, TValue>({
                         }
                         className="max-w-sm"
                     />
-                    <Select defaultValue={"email"}
-                        onValueChange={(e) => setColumnFilterBy(e || "email")}>
+                    <Select defaultValue={"title"}
+                        onValueChange={(e) => setColumnFilterBy(e || "title")}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Filter By" />
                         </SelectTrigger>
@@ -148,6 +177,10 @@ export function DataTable<TData, TValue>({
                     <Button variant="outline" size="icon" onClick={refreshData}>
                         <VscRefresh className="h-4 w-4" />
                     </Button>
+
+                    <Button variant="outline" size="icon" onClick={createBlogFunc}>
+                        <PlusIcon className="h-4 w-4" />
+                    </Button>
                 </div>
 
             </div>
@@ -187,20 +220,21 @@ export function DataTable<TData, TValue>({
                                 </TableRow>
                             ))
                         ) : (
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <TableRow key={i}>
-                                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                                    <TableCell className='flex items-center justify-center gap-2'>
-                                        <Skeleton className="h-8 w-8 rounded-full" />
-                                        <Skeleton className="h-5 w-32" />
-                                    </TableCell>
-                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                </TableRow>
-                            ))
+                            // Array.from({ length: 5 }).map((_, i) => (
+                            //     <TableRow key={i}>
+                            //         <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                            //         <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                            //         <TableCell className='flex items-center justify-center gap-2'>
+                            //             <Skeleton className="h-8 w-8 rounded-full" />
+                            //             <Skeleton className="h-5 w-32" />
+                            //         </TableCell>
+                            //         <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                            //         <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                            //         <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                            //         <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                            //     </TableRow>
+                            // ))
+                            "No data found."
                         )}
                     </TableBody>
                 </Table>

@@ -14,8 +14,8 @@ export interface DBBlogPostType {
     updatedAt: Date;
 
     author: MinAuthType;
-    tags: ObjectId[];
-    categories: ObjectId[];
+    tags: string[];
+    categories: string[];
     comments: BlogCommentType[];
 
     // For internal use
