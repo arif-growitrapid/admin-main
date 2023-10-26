@@ -48,6 +48,7 @@ export async function MinifyAuth(auth: AuthType): Promise<MinAuthType> {
     return {
         id: auth.id,
         roles: auth.roles,
+        is_employee: auth.is_employee,
         status: auth.status,
         createdAt: auth.createdAt,
 

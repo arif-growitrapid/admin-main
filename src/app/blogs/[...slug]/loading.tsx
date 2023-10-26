@@ -100,6 +100,7 @@ export default function loading(props: Props) {
                                         {/* Random skeleton with random width and height */}
                                         {Array.from({ length: 10 }).map((_, i) => (
                                             <Skeleton
+                                                key={i}
                                                 className='my-2 w-full h-8'
                                                 style={{
                                                     // Random width(%) and height(px)
