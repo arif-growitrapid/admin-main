@@ -2,9 +2,9 @@
 
 import config from "@/config";
 import clientPromise from "@/db/db";
-import { AuthType, DBAuthType, roleType } from "@/types/auth";
+import { DBAuthType, roleType } from "@/types/auth";
 import { ObjectId, WithId } from "mongodb";
-import { MinifyAuth, matchPermissions } from "./auth";
+import { matchPermissions } from "./auth";
 import { Response, ServerFunctionResponse } from "./functions";
 import { revalidatePath } from "next/cache";
 import { forced_operators } from "@/app/api/auth/[...nextauth]/session";
@@ -120,6 +120,7 @@ export async function searchForUser(
                 bio: user.bio,
                 emailVerified: user.emailVerified,
                 roles: user.roles,
+                is_employee: user.is_employee,
                 status: user.status,
             };
         });
@@ -233,6 +234,7 @@ export async function createUser(
         const new_user: DBAuthType = {
             ...user as DBAuthType,
             roles: ["user", ...(user.roles || [])],
+            is_employee: false,
             status: user.status || (isCreatedFromOperator ? "active" : "pending"),
             createdAt: user.createdAt || new Date(),
         };
@@ -410,6 +412,56 @@ export async function assignRolesToUsersByID(
                     "user",
                     ...(hasOperatorRole ? ["operator"] : []),
                 ]
+            }
+        }));
+
+        if (path) revalidatePath(path, "page");
+        return Response("success", result.modifiedCount === 1);
+    } catch (error) {
+        console.error(error);
+        return Response("error", false, 500, "Internal server error");
+    }
+}
+
+/**
+ * Promote/Demote users employee by their ID
+ * Only an operator can promote/demote users, but they can not promote/demote themselves
+ */
+export async function promoteUsersByID(
+    ids: string[],
+    isEmployee: boolean,
+    path?: string,
+): Promise<ServerFunctionResponse<boolean>> {
+    try {
+        // Match permissions to get if the user has the permission to edit user
+        // If the user has the permission to edit user, then edit the user
+        const t = await matchPermissions(["user_edit_others"]);
+        if (!t) return Response("error", false, 401, "You don't have the permission to edit users");
+        const { session, isMatched, matches } = t;
+
+        // If trying to edit self, then return error
+        if (ids.includes(session?.user?.id)) return Response("error", false, 401, "You can not edit yourself");
+
+        // If the user is not an operator, then they can not promote/demote any user including self.
+        // If the user is an operator, then they can edit any user's profile
+        if (!matches.includes("user_edit_others"))
+            return Response("error", false, 401, "You don't have the permission to edit users");
+
+        // If there is no match, then the user doesn't have the permission to edit any user including self.
+        if (!isMatched) return Response("error", false, 401, "You don't have the permission to edit users");
+
+        const client = await clientPromise;
+
+        const db = client.db(config.db.auth_name);
+        const user_collection = db.collection<DBAuthType>("users");
+
+        const result = await user_collection.updateMany(({
+            _id: {
+                $in: ids.map(id => new ObjectId(id))
+            }
+        }), ({
+            $set: {
+                is_employee: isEmployee
             }
         }));
 

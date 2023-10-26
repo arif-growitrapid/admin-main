@@ -16,7 +16,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { getServerSession } from 'next-auth';
 import { nextAuthOptions } from './api/auth/[...nextauth]/authOptions';
 import { Icon } from 'next/dist/lib/metadata/types/metadata-types';
-// import '@/components/editor/wysiwyg/style.scss'
 
 // Add your custom fonts here
 const inter = Inter({ subsets: ['latin'] })

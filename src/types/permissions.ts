@@ -253,6 +253,16 @@ export const detailed_permissions = [
         description: "Oversee and control the database, ensuring data integrity and efficiency."
     },
     {
+        id: "manage_static_database",
+        name: "Manage Static Database",
+        description: "Oversee and control the static database, ensuring data integrity and efficiency."
+    },
+    {
+        id: "view_static_database",
+        name: "View Static Database",
+        description: "Access and review the static database, gaining insights and information."
+    },
+    {
         id: "view_dashboard",
         name: "View Dashboard",
         description: "Access and interact with the system's dashboard for real-time insights."

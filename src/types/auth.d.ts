@@ -5,6 +5,7 @@ export interface DBAuthType {
     _id: ObjectId | string;
     id: string;
     roles: string[];
+    is_employee: boolean;
     status: "active" | "inactive" | "blocked" | "pending";
     createdAt: Date;
 
@@ -28,6 +29,7 @@ export interface AuthType {
     _id: ObjectId | string;
     id: string;
     roles: string[] & defaultRoles[];
+    is_employee: boolean;
     status: "active" | "inactive" | "blocked" | "pending";
     createdAt: Date;
 
@@ -52,6 +54,7 @@ export interface AuthType {
 export interface MinAuthType {
     id: string;
     roles: string[] & defaultRoles[];
+    is_employee: boolean;
     status: "active" | "inactive" | "blocked" | "pending";
     createdAt: Date;
 

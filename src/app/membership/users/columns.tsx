@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
 import { DBAuthType, roleType } from "@/types/auth";
-import { CaretSortIcon, ClipboardIcon, DotsHorizontalIcon, ExclamationTriangleIcon, GearIcon, PersonIcon, ReloadIcon, TrashIcon } from "@radix-ui/react-icons";
+import { CaretSortIcon, ClipboardIcon, DotsHorizontalIcon, ExclamationTriangleIcon, GearIcon, IdCardIcon, PersonIcon, ReloadIcon, TrashIcon } from "@radix-ui/react-icons";
 import { ColumnDef, Row, RowSelectionState, Table } from "@tanstack/react-table"
 
 import { VscVerified } from "react-icons/vsc";
@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import UserModal from "@/components/user_modal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { assignRolesToUsersByID, changeVisibilityOfUsersByID, deleteUsersByID } from "@/functions/user";
+import { assignRolesToUsersByID, changeVisibilityOfUsersByID, deleteUsersByID, promoteUsersByID } from "@/functions/user";
 import { getRoles } from "@/functions/roles";
 import { Switch } from "@/components/ui/switch";
 
@@ -115,6 +115,33 @@ export const useColumns = ({ initial_roles }: { initial_roles?: roleType[] }): C
             enableSorting: true,
         },
         {
+            accessorKey: "is_employee",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        variant="ghost"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    >
+                        Employee
+                        <CaretSortIcon className="ml-2 h-4 w-4" />
+                    </Button>
+                )
+            },
+            cell: ({ row }) => {
+                const data = row.original;
+
+                return (
+                    <div className="flex flex-row gap-1 items-center justify-center">
+                        <Badge variant="outline" className={`rounded-full
+                                ${data.is_employee ? "border-green-500" : "border-red-600"}
+                                ${data.is_employee ? "bg-green-500" : "bg-red-600"}
+                                [--tw-bg-opacity:0.3]
+                            `}>{data.is_employee ? "Yes" : "No"}</Badge>
+                    </div>
+                );
+            },
+        },
+        {
             accessorKey: "status",
             header: ({ column }) => {
                 return (
@@ -182,7 +209,18 @@ function ActionsComponentHeader({
 
     function DangerActionFunction() {
         startTransition(async () => {
-            if ([2, 3, 4, 5].includes(alertItem)) {
+            if ([6, 7].includes(alertItem)) {
+                const res = await promoteUsersByID(selectedRowIds, alertItem === 6, window.location.pathname);
+
+                toast({
+                    title: res.status === 200 ? "User status changed" : "User status change failed",
+                    description: res.status === 200 ? <div>
+                        <p>User status changed to <span className="text-green-500">{alertItem === 6 ? "Employee"
+                            : "User"}</span></p>
+                        <p>User will be notified via email</p>
+                    </div> : res.message || "User status change failed",
+                });
+            } else if ([2, 3, 4, 5].includes(alertItem)) {
                 const res = await changeVisibilityOfUsersByID(
                     selectedRowIds,
                     alertItem === 2 ? "pending"
@@ -228,6 +266,16 @@ function ActionsComponentHeader({
                 <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuLabel className="text-muted-foreground">Actions</DropdownMenuLabel>
 
+                    {/* Promote User */}
+                    <DropdownMenuItem onClick={e => setAlertItem(6)}>
+                        Assign as Employee
+                        <DropdownMenuShortcut><IdCardIcon /></DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                    {/* Demote User */}
+                    <DropdownMenuItem onClick={e => setAlertItem(7)}>
+                        Remove Employee
+                        <DropdownMenuShortcut><IdCardIcon /></DropdownMenuShortcut>
+                    </DropdownMenuItem>
                     {/* Delete User */}
                     <DropdownMenuItem onClick={e => setAlertItem(1)}>
                         Delete User
@@ -259,10 +307,13 @@ function ActionsComponentHeader({
             <AlertDialog open={alertItem > 0} onOpenChange={open => setAlertItem(open ? alertItem : 0)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure {alertItem === 2 ? "Pending"
-                            : alertItem === 3 ? "Activate"
-                                : alertItem === 4 ? "Deactivate"
-                                    : "Block"} User?</AlertDialogTitle>
+                        <AlertDialogTitle>Are you absolutely sure want to {alertItem === 1 ? "Delete"
+                            : alertItem === 2 ? "Pend"
+                                : alertItem === 3 ? "Activate"
+                                    : alertItem === 4 ? "Deactivate"
+                                        : alertItem === 5 ? "Block"
+                                            : alertItem === 6 ? "Assign as an Employee"
+                                                : "Dissociate from Employee"} this User?</AlertDialogTitle>
                         <AlertDialogDescription>
                             {alertItem === 1 ?
                                 "This action cannot be undone. This will permanently change your account in our servers."
@@ -404,6 +455,23 @@ function ActionsComponent({
                         }}>
                             Edit Roles
                             <DropdownMenuShortcut><GearIcon /></DropdownMenuShortcut>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                            startTransition(async () => {
+                                const res = await promoteUsersByID([user.id], !user.is_employee, window.location.pathname);
+
+                                toast({
+                                    title: res.status === 200 ? "User status changed" : "User status change failed",
+                                    description: res.status === 200 ? <div>
+                                        <p>User status changed to <span className="text-green-500">{!user.is_employee ? "Employee"
+                                            : "User"}</span></p>
+                                        <p>User will be notified via email</p>
+                                    </div> : res.message || "User status change failed",
+                                });
+                            });
+                        }}>
+                            {user.is_employee ? "Remove Employee" : "Assign as Employee"}
+                            <DropdownMenuShortcut><IdCardIcon /></DropdownMenuShortcut>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuSub>

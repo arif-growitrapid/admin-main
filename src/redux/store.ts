@@ -2,13 +2,11 @@ import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useSelector, useDispatch } from "react-redux";
 
 import uiSliceReducer from "./slices/ui";
-import HistorySliceReducer from "./slices/sharedHistory";
 
 export function makeStore() {
     return configureStore({
         reducer: {
             ui: uiSliceReducer,
-            history: HistorySliceReducer,
         },
         devTools: process.env.NEXT_PUBLIC_ENV === "development",
     });

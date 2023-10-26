@@ -80,6 +80,11 @@ export const menuFunc = (user?: AuthType) => [
                 path: "/mongodb",
                 description: "Manage MongoDB Data directly from here."
             },
+            (user?.permissions?.manage_static_database) && {
+                name: "Static DB",
+                path: "/static",
+                description: "Manage Static Database directly from here."
+            },
             {
                 name: "Assets",
                 path: "/assets",

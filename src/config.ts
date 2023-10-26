@@ -27,6 +27,7 @@ export default {
         auth_name: "auth",
         root_name: "root",
         blog_name: "blog",
+        static_db_name: "static_db",
     },
 
     icons: [

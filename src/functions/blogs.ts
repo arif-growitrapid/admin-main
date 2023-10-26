@@ -1,6 +1,6 @@
 "use server";
 
-import { DBBlogPostType } from "@/types/blog";
+import { BlogTagType, DBBlogPostType } from "@/types/blog";
 import { ObjectId, WithId } from "mongodb";
 import { Response, ServerFunctionResponse } from "./functions";
 import { MinifyAuth, matchPermissions } from "./auth";
@@ -438,6 +438,7 @@ export async function updateBlog(blog_id: string, data: Partial<DBBlogPostType>,
         const client = await clientPromise;
 
         const db = client.db(config.db.blog_name);
+        const tags_collection = db.collection<WithId<BlogTagType>>("tags");
         const collection = db.collection<DBBlogPostType>("posts");
 
         const blog = await collection.findOne({
@@ -475,6 +476,46 @@ export async function updateBlog(blog_id: string, data: Partial<DBBlogPostType>,
             },
             { returnDocument: "after" }
         );
+
+        // Add tag if not exists
+        // If the tag exists, then add the blog id to the tag
+        // Don't await this
+        data.tags?.forEach(async (tag) => {
+            const tagExists = await tags_collection.findOne({ name: tag });
+            if (tagExists) {
+                await tags_collection.findOneAndUpdate(
+                    {
+                        name: tag,
+                    },
+                    {
+                        $push: { posts: blog_id },
+                    }
+                );
+            } else {
+                await tags_collection.insertOne({
+                    _id: new ObjectId(),
+                    name: tag,
+                    createdAt: new Date(),
+                    posts: [blog_id],
+                });
+            }
+        });
+
+        // Add id to category if category exists
+        // Don't await this
+        data.categories?.forEach(async (category) => {
+            const categoryExists = await tags_collection.findOne({ name: category });
+            if (categoryExists) {
+                await tags_collection.findOneAndUpdate(
+                    {
+                        name: category,
+                    },
+                    {
+                        $push: { posts: blog_id },
+                    }
+                );
+            }
+        });
 
         path && revalidatePath(path);
         return Response("success", updatedBlog, 200, "Blog updated successfully");

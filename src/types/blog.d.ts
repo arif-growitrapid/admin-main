@@ -66,3 +66,9 @@ export type BlogCommentType = {
     updatedAt: Date;
     replies: BlogCommentType[];
 };
+
+export type BlogTagType = {
+    name: string;
+    createdAt: Date;
+    posts: string[];
+};

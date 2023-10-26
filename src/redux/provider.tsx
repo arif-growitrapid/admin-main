@@ -6,7 +6,6 @@ import { SessionProvider } from 'next-auth/react';
 import { useEffect, useRef } from "react";
 import { BroadcastChannel } from "@/utils/web";
 import config from "@/config";
-import { createEmptyHistoryState } from "@lexical/react/LexicalHistoryPlugin";
 import { Session } from "next-auth";
 
 export default function Providers({
@@ -30,12 +29,7 @@ export default function Providers({
     }, []);
 
     return <SessionProvider session={session}>
-        <Provider store={store} serverState={{
-            ui: {
-                theme: theme || "dark",
-            },
-            history: createEmptyHistoryState(),
-        }}>
+        <Provider store={store}>
             {children}
         </Provider>
     </SessionProvider>;

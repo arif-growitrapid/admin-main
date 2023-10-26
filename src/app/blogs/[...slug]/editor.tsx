@@ -32,7 +32,7 @@ export default function Editor({
     // Breakpoint for mobile devices is 1024px (tailwindcss: lg)
     const [viewMode, setViewMode] = React.useState<'editor' | 'panel'>(['editor', 'panel'].includes(searchParams.view || "")
         ? searchParams.view as 'editor' | 'panel'
-        : 'editor');
+        : 'panel');
     // Get Boolean value from search params
     const isViewModeEditor = viewMode === 'editor';
     const isViewModePanel = viewMode === 'panel';
@@ -170,14 +170,14 @@ export default function Editor({
                 </div>
 
                 <div className={`absolute w-full h-full top-0 left-0 z-[1499]
-                transition-all duration-300 bg-background/80 backdrop-blur-sm
-                lg:!hidden
-                ${isViewModePanel ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}
+                    transition-all duration-300 bg-background/80 backdrop-blur-sm
+                    lg:!hidden
+                    ${isViewModePanel ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}
                 `} onClick={() => setViewMode('editor')}></div>
 
                 <div className={`editor-wrapper relative h-full
-                w-full
-                lg:w-[calc(100%-25rem)]`}>
+                    w-full
+                    lg:w-[calc(100%-25rem)]`}>
                     <div className='w-full h-full'>
                         <ScrollArea className='w-full h-full' orientation='vertical'>
                             <WysiwigEditor
