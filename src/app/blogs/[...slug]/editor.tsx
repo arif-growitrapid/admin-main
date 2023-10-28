@@ -208,7 +208,7 @@ export default function Editor({
     )
 }
 
-function BlogForm({ data, setData }: {
+export function BlogForm({ data, setData }: {
     data: BlogPostType,
     setData: React.Dispatch<React.SetStateAction<BlogPostType>>
 }) {
@@ -219,7 +219,7 @@ function BlogForm({ data, setData }: {
         <div className={`${style.form_group} !mb-1`}>
             <Input
                 id='title'
-                value={data.title}
+                value={data.title || ''}
                 placeholder=' '
                 onChange={e => setData({
                     ...data,
@@ -232,7 +232,7 @@ function BlogForm({ data, setData }: {
         </div>
 
         {/* Slug */}
-        <p className='text-xs text-muted-foreground'>The slug will be as followed: <span className='underline'>{data.slug}</span></p>
+        <p className='text-xs text-muted-foreground'>The slug will be as followed: <span className='underline'>{data.slug || ''}</span></p>
 
         {/* Published & SEO Compatability */}
         <div className={`my-1 mt-2 py-2 px-[0.7rem] border rounded-[5px] flex flex-row items-center gap-4`}>
@@ -240,7 +240,7 @@ function BlogForm({ data, setData }: {
                 <Label htmlFor='is_published'>Published</Label>
                 <Switch
                     id='is_published'
-                    checked={data.is_published}
+                    checked={data.is_published || false}
                     onCheckedChange={e => setData({
                         ...data,
                         is_published: e
@@ -252,7 +252,7 @@ function BlogForm({ data, setData }: {
                 <Label htmlFor='is_seo_compatabile'>SEO Compatable</Label>
                 <Switch
                     id='is_seo_compatabile'
-                    checked={data.is_seo_compatabile}
+                    checked={data.is_seo_compatabile || false}
                     onCheckedChange={e => setData({
                         ...data,
                         is_seo_compatabile: e
@@ -266,7 +266,7 @@ function BlogForm({ data, setData }: {
             <textarea
                 id='excerpt'
                 name='excerpt'
-                value={data.excerpt}
+                value={data.excerpt || ''}
                 placeholder=' '
                 onChange={e => setData({
                     ...data,
@@ -282,7 +282,7 @@ function BlogForm({ data, setData }: {
             <textarea
                 name='tags'
                 id='tags'
-                defaultValue={data.tags.join(', ')}
+                defaultValue={(data.tags || []).join(', ')}
                 placeholder=' '
                 onChange={e => setData({
                     ...data,
@@ -299,7 +299,7 @@ function BlogForm({ data, setData }: {
             <textarea
                 name='categories'
                 id='categories'
-                defaultValue={data.categories.join(', ')}
+                defaultValue={(data.categories || []).join(', ')}
                 placeholder=' '
                 onChange={e => setData({
                     ...data,
@@ -315,7 +315,7 @@ function BlogForm({ data, setData }: {
         <div className={`${style.form_group} !mb-1`}>
             <Input
                 id='thumbnail'
-                value={data.thumbnail}
+                value={data.thumbnail || ''}
                 placeholder=' '
                 onChange={e => setData({
                     ...data,
@@ -330,8 +330,8 @@ function BlogForm({ data, setData }: {
         <div>
             <Label htmlFor='thumbnail-image' className='cursor-pointer'>
                 <img
-                    src={data.thumbnail}
-                    alt={data.title}
+                    src={data.thumbnail || '/images/placeholder.png'}
+                    alt={data.title || 'Thumbnail'}
                     className='w-full h-full object-cover rounded-lg'
                 />
             </Label>

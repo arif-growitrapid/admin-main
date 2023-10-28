@@ -65,7 +65,7 @@ export const menuFunc = (user?: AuthType) => [
             }
         ]
     },
-    (user?.permissions?.manage_database) && {
+    (user?.permissions?.database_manage) && {
         name: "Database",
         path: "/database",
         description: "Manage database and collections as well as assets. Perform CRUD operations on database and collections.",
@@ -80,7 +80,7 @@ export const menuFunc = (user?: AuthType) => [
                 path: "/mongodb",
                 description: "Manage MongoDB Data directly from here."
             },
-            (user?.permissions?.manage_static_database) && {
+            (user?.permissions?.static_database_manage) && {
                 name: "Static DB",
                 path: "/static",
                 description: "Manage Static Database directly from here."

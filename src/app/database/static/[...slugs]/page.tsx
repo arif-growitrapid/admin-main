@@ -1,5 +1,5 @@
 import React from 'react'
-import Structure from './structure'
+import Structure from '../structure'
 
 type Props = {
     searchParams?: {
@@ -15,6 +15,12 @@ export default function page({
         <Structure
             searchParams={searchParams}
             data={{
+                collection: {
+                    id: 'home',
+                    name: 'Home Page',
+                    description: 'All static content for the home page.',
+                    icon: 'HomeIcon'
+                },
                 collections: [
                     {
                         id: 'home',
@@ -25,10 +31,8 @@ export default function page({
                 ]
             }}
         >
-            <div className='w-full h-full'>
-
-                
-
+            <div className='h-full w-full'>
+                Hello
             </div>
         </Structure>
     )

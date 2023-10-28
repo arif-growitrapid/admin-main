@@ -246,22 +246,28 @@ export const detailed_permissions = [
         name: "Save Service",
         description: "Bookmark and save services for future reference and utilization."
     },
-    // Other Management
+    // Database Management
     {
-        id: "manage_database",
+        id: "database_manage",
         name: "Manage Database",
         description: "Oversee and control the database, ensuring data integrity and efficiency."
     },
     {
-        id: "manage_static_database",
+        id: "static_database_manage",
         name: "Manage Static Database",
         description: "Oversee and control the static database, ensuring data integrity and efficiency."
     },
     {
-        id: "view_static_database",
+        id: "static_database_configuration_edit",
+        name: "Edit Static Database Configuration",
+        description: "Modify and update the static database configuration, affecting its behavior."
+    },
+    {
+        id: "static_database_view",
         name: "View Static Database",
         description: "Access and review the static database, gaining insights and information."
     },
+    // Other Management
     {
         id: "view_dashboard",
         name: "View Dashboard",

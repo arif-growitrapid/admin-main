@@ -3,6 +3,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookmarkFilledIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons';
 import React from 'react'
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import style from '@/app/membership/roles/forms.module.scss';
 
 type Props = {
 }
@@ -57,28 +61,107 @@ export default function loading(props: Props) {
 
                         <div className='flex-grow flex-shrink flex-1 h-[calc(100%-41px)]'>
                             <ScrollArea className='w-full h-full' orientation='vertical'>
-                                <div className={`w-full px-4 py-4`}>
+                                <div className={`${style.form} w-full px-4 py-4`}>
 
-                                    <Skeleton className='w-full h-[36px] mt-4 mb-1' />
+                                    {/* Title */}
+                                    <div className={`${style.form_group} !mb-1`}>
+                                        <Input
+                                            id='title'
+                                            value={''}
+                                            placeholder=' '
+                                            required
+                                        />
+                                        <Label htmlFor='title'>Title <span className=''>*</span></Label>
+                                    </div>
 
-                                    <p className='text-xs text-muted-foreground'><span className='underline'>
-                                        <Skeleton className='w-[calc(80%)] h-[16px] inline-block' />
-                                    </span></p>
+                                    {/* Slug */}
+                                    <p className='text-xs text-muted-foreground'>The slug will be as followed: <span className='underline'>{''}</span></p>
 
-                                    <Skeleton className='w-full h-[36px] mt-4 mb-1' />
+                                    {/* Published & SEO Compatability */}
+                                    <div className={`my-1 mt-2 py-2 px-[0.7rem] border rounded-[5px] flex flex-row items-center gap-4`}>
+                                        <div className='flex-grow flex flex-row items-center gap-4'>
+                                            <Label htmlFor='is_published'>Published</Label>
+                                            <Switch
+                                                id='is_published'
+                                                checked={false}
+                                            />
+                                        </div>
 
-                                    <Skeleton className='w-full h-[100px] mt-4 mb-1' />
+                                        <div className='flex-grow flex flex-row items-center gap-4'>
+                                            <Label htmlFor='is_seo_compatabile'>SEO Compatable</Label>
+                                            <Switch
+                                                id='is_seo_compatabile'
+                                                checked={false}
+                                            />
+                                        </div>
+                                    </div>
 
-                                    <Skeleton className='w-full h-[80px] mt-4 mb-1' />
+                                    {/* Excerpt */}
+                                    <div className={`${style.form_group} !mb-1`}>
+                                        <textarea
+                                            id='excerpt'
+                                            name='excerpt'
+                                            value={''}
+                                            placeholder=' '
+                                            className='min-h-[100px] resize-y'
+                                        ></textarea>
+                                        <Label htmlFor='excerpt'>Excerpt</Label>
+                                    </div>
+
+                                    {/* Tags */}
+                                    <div className={`${style.form_group} !mb-1`}>
+                                        <textarea
+                                            name='tags'
+                                            id='tags'
+                                            defaultValue={" "}
+                                            placeholder=' '
+                                            className='min-h-[80px] resize-y'
+                                        ></textarea>
+                                        <Label htmlFor='tags'>Tags</Label>
+                                    </div>
                                     <p className='text-xs text-muted-foreground'>The tags of the blog. Separate tags with a comma (,).</p>
 
-                                    <Skeleton className='w-full h-[80px] mt-4 mb-1' />
+                                    {/* Categories */}
+                                    <div className={`${style.form_group} !mb-1`}>
+                                        <textarea
+                                            name='categories'
+                                            id='categories'
+                                            defaultValue={""}
+                                            placeholder=' '
+                                            className='min-h-[80px] resize-y'
+                                        ></textarea>
+                                        <Label htmlFor='categories'>Categories</Label>
+                                    </div>
                                     <p className='text-xs text-muted-foreground'>The catagories of the blog. Separate categories with a comma (,).</p>
 
-                                    <Skeleton className='w-full h-[36px] mt-4 mb-1' />
-                                    <p className='text-xs text-muted-foreground'>Upload new thumbnail to replace this one. Click the image below.</p>
+                                    {/* Thumbnail */}
+                                    <div className={`${style.form_group} !mb-1`}>
+                                        <Input
+                                            id='thumbnail'
+                                            value={''}
+                                            placeholder=' '
+                                        />
+                                        <Label htmlFor='thumbnail'>Thumbnail</Label>
+                                    </div>
 
-                                    <Skeleton className='w-full h-[244px] mt-4 mb-1' />
+                                    {/* Thumbnail Image upload */}
+                                    <p className='text-xs text-muted-foreground'>Upload new thumbnail to replace this one. Click the image below.</p>
+                                    <div>
+                                        <Label htmlFor='thumbnail-image' className='cursor-pointer'>
+                                            <img
+                                                src={'/images/placeholder.png'}
+                                                alt={'Thumbnail'}
+                                                className='w-full h-full object-cover rounded-lg'
+                                            />
+                                        </Label>
+                                        <input
+                                            id='thumbnail-image'
+                                            name='thumbnail-image'
+                                            type='file'
+                                            accept='image/*'
+                                            className='hidden'
+                                        />
+                                    </div>
 
                                 </div>
                             </ScrollArea>
