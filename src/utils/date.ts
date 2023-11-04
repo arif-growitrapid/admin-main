@@ -46,6 +46,9 @@
  * @param format {string}
  * @param utc {boolean}
  * @returns 
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
  */
 export default function formatDate(date: Date, format: string, utc?: boolean) {
     var MMMM = ["\x00", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

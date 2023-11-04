@@ -1,47 +1,48 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeftIcon, HamburgerMenuIcon, PlusIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, HamburgerMenuIcon, Pencil1Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import React from 'react'
 import CreateCollectionModal from './create_collection_modal';
 import { get_radix_icon } from '@/components/radix_icons';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 type Props = {
     children?: React.ReactNode;
-    searchParams?: {
-        view?: 'editor' | 'panel';
-    }
     data: {
-        collection?: {
-            id: string;
-            name: string;
-            description: string;
-            icon: string;
-        };
         collections: {
             id: string;
             name: string;
             description: string;
             icon: string;
+            isCollection: boolean;
+            isActive: boolean;
         }[];
     };
 }
 
 export default function Structure({
     children,
-    searchParams,
     data
 }: Props) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParamsHook = useSearchParams();
+
     // Will only work on mobile devices
     // Side panel on mobile devices will actually behave like a separate page (not actually).
     // On desktop, it will be a side panel (not collapsible).
     // Breakpoint for mobile devices is 1024px (tailwindcss: lg)
-    const [viewMode, setViewMode] = React.useState<'editor' | 'panel'>(['editor', 'panel'].includes(searchParams?.view || "")
-        ? searchParams?.view as 'editor' | 'panel'
-        : 'panel');
+    const viewModeFromSearchParams = searchParamsHook?.get('view');
+    const [viewMode, setViewMode] = React.useState<'editor' | 'panel'>(
+        pathname === '/database/static'
+            ? 'panel'
+            : ['editor', 'panel'].includes(viewModeFromSearchParams || "")
+                ? viewModeFromSearchParams as 'editor' | 'panel'
+                : 'panel'
+    );
+    // const [viewMode, setViewMode] = React.useState<'editor' | 'panel'>(isHome ? 'panel' : 'editor');
     // Get Boolean value from search params
     const isViewModeEditor = viewMode === 'editor';
     const isViewModePanel = viewMode === 'panel';
@@ -53,7 +54,8 @@ export default function Structure({
         window.history.replaceState({}, '', url.href);
     }, [viewMode]);
 
-    const router = useRouter();
+    const slugs = pathname.replace('/database/static/', '').split('/');
+    const collection = data.collections.find(collection => collection.id === slugs[0]);
 
     return (
         <div className='h-full w-full relative'>
@@ -73,19 +75,7 @@ export default function Structure({
                     flex flex-row flex-wrap items-center justify-between gap-2`}>
                         <div className='flex-grow'></div>
 
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button
-                                    className='h-full px-2 flex gap-2 items-center justify-center'
-                                    variant="outline">
-                                    <PlusIcon className='w-4 h-4' />
-                                    <span>Create Collection</span>
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className={`rounded-lg w-full max-w-[calc(100%-2rem)] lg:max-w-4xl h-full max-h-[calc(100%-2rem)] p-0`}>
-                                <CreateCollectionModal />
-                            </DialogContent>
-                        </Dialog>
+                        <CreateCollectionModal />
                     </div>
 
                     <div className='flex-grow flex-shrink flex-1 h-[calc(100%-41px)]'>
@@ -93,28 +83,52 @@ export default function Structure({
 
                             {/* Collections List */}
                             <div className='flex flex-col items-stretch gap-2 p-2'>
-                                {data.collections.map((collection, index) => (
+                                {data.collections.map((data_collection, index) => (
                                     <Button
                                         key={index}
                                         // select this collection if it is the current collection
-                                        className={`h-full px-2 flex gap-2 items-center justify-start text-muted-foreground
-                                            ${collection.id === data.collection?.id ? 'bg-muted-foreground/10' : ''}
+                                        className={`group overflow-hidden relative h-full px-2 flex gap-2 items-center justify-start text-muted-foreground
+                                            ${data_collection.id === collection?.id ? 'bg-muted-foreground/10' : ''}
                                         `}
                                         variant="outline"
                                         onClick={e => {
+                                            router.push(`/database/static/${data_collection.id}?view=${viewModeFromSearchParams || 'editor'}`);
                                             setViewMode('editor');
-                                            router.push(`/database/static/${collection.id}?view=${searchParams?.view || 'editor'}`);
                                         }}>
-                                        {React.createElement(get_radix_icon(collection.icon).component, {
+                                        {React.createElement(get_radix_icon(data_collection.icon).component, {
                                             className: 'w-6 h-6 fill-current',
                                         })}
                                         <p className='block flex-grow text-left'>
                                             <span className='block text-base font-semibold mb-1'>
-                                                {collection.name}
+                                                {data_collection.name}
                                             </span>
                                             <span className='block text-xs line-clamp-2'>
-                                                {collection.description}
+                                                {data_collection.description}
                                             </span>
+                                        </p>
+                                        <p className={`absolute top-0 right-0 bottom-0 h-full w-auto aspect-[1/2]
+                                            bg- background/95 shadow-2xl
+                                            flex flex-col items-center justify-evenly
+                                            transition-transform translate-x-full
+                                            group-hover:translate-x-0`}>
+                                            <Button
+                                                className='h-full p-1 w-[30px] rounded-full flex gap-2 items-center justify-center text-muted-foreground hover:text-primary'
+                                                variant="ghost"
+                                                title={`Edit This ${data_collection.isCollection ? "Collection" : "Document"}`}
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                }}>
+                                                <Pencil1Icon className='w-4 h-4' />
+                                            </Button>
+                                            <Button
+                                                className='h-full p-1 w-[30px] rounded-full flex gap-2 items-center justify-center text-muted-foreground hover:text-primary'
+                                                variant="ghost"
+                                                title={`Delete This ${data_collection.isCollection ? "Collection" : "Document"}`}
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                }}>
+                                                <TrashIcon className='w-4 h-4' />
+                                            </Button>
                                         </p>
                                     </Button>
                                 ))}
@@ -144,12 +158,17 @@ export default function Structure({
                             <Button
                                 className='lg:hidden h-full px-2 flex gap-2 items-center justify-center'
                                 onClick={() => setViewMode('panel')}
+                                disabled={data.collections.length === 0}
                                 variant="outline">
                                 <ArrowLeftIcon className='w-4 h-4 block sm:hidden' />
                                 <HamburgerMenuIcon className='w-4 h-4 hidden sm:block lg:hidden' />
                             </Button>
 
-                            <h2 className='text-lg text-muted-foreground font-medium m-0 lg:ml-4'>{data.collection?.name || "Static Database"}</h2>
+                            <h2 className='text-lg text-muted-foreground font-medium m-0 lg:ml-4'>
+                                {collection?.name || "Static Database"}
+                                &nbsp;&nbsp;
+                                ({collection?.isCollection ? 'Collection' : 'Document'})
+                            </h2>
 
                             <div className='flex-grow'></div>
 

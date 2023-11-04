@@ -488,7 +488,7 @@ export async function updateBlog(blog_id: string, data: Partial<DBBlogPostType>,
                         name: tag,
                     },
                     {
-                        $push: { posts: blog_id },
+                        $addToSet: { posts: blog_id },
                     }
                 );
             } else {
@@ -511,7 +511,7 @@ export async function updateBlog(blog_id: string, data: Partial<DBBlogPostType>,
                         name: category,
                     },
                     {
-                        $push: { posts: blog_id },
+                        $addToSet: { posts: blog_id },
                     }
                 );
             }

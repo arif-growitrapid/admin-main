@@ -1,5 +1,13 @@
 // @ts-nocheck
 
+/**
+ * @module email-html.ts
+ * Currently used for only to send email verification link
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
+ */
+
 import { Theme } from "next-auth";
 import TinyUrl from "tinyurl"
 

@@ -1,9 +1,14 @@
+/**
+ * @module @functions/auth
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
+ */
 "use server";
 
 import { nextAuthOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 import { AuthType, MinAuthType } from "@/types/auth";
 import { PermissionsArrayType } from "@/types/permissions";
-import { ObjectId } from "mongodb";
 import { Session, getServerSession } from "next-auth";
 
 /**

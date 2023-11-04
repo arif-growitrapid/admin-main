@@ -1,3 +1,10 @@
+/**
+ * @file Blog Types
+ * The typescript types for blog.
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
+ */
 import { ObjectId } from "mongodb";
 import { MinAuthType } from "./auth";
 

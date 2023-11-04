@@ -1,3 +1,12 @@
+/**
+ * @file Web utilities
+ * All necessory files for web utilities.
+ * For easy access to all navigators features.
+ * Includes new & custom BroadcastChannel API (Not-Native One).
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
+ */
 'use client';
 
 import { useEffect, useState } from "react"

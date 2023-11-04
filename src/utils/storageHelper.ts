@@ -1,3 +1,11 @@
+/**
+ * Storage Helper. This file contains all the functions related to local storage.
+ * Can only be used in client side.
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
+ */
+
 import "client-only";
 
 export function getLocalStorage(key: string, defaultValue: any) {

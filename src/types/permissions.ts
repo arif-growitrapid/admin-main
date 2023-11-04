@@ -1,3 +1,12 @@
+/**
+ * Permissions
+ * List of all permissions available in the system.
+ * Also includes detailed descriptions of each permission.
+ * Includes types for permissions arrays.
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
+ */
 
 export const detailed_permissions = [
     {

@@ -1,3 +1,11 @@
+/**
+ * @file funcs.ts
+ * The utility functions for the project.
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
+ */
+
 import deepmerge from 'deepmerge';
 
 export function stringifyNumberData(num: number) {

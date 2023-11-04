@@ -1,3 +1,11 @@
+/**
+ * Cookie Utils
+ * Necessary for the cookie management
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
+ */
+
 'use client';
 
 export function setCookie(cname: string, cvalue: string, exdays: number) {

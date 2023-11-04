@@ -1,3 +1,11 @@
+/**
+ * @module config.ts
+ * The configuration file for the project. Only can be used with Next.js
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
+ */
+
 import Icon from "./app/favicon.ico"
 // Importing All Icons
 import Icon48 from "@/assets/logo/maskable/maskable_icon_x48.png";
@@ -28,6 +36,7 @@ export default {
         root_name: "root",
         blog_name: "blog",
         static_db_name: "static_db",
+        default_document_collection_name: "default_document_collection",
     },
 
     icons: [

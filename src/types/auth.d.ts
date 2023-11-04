@@ -1,3 +1,10 @@
+/**
+ * @file auth.d.ts
+ * The typescript types for auth.
+ * 
+ * Developed bt @NeuroNexul / Arif Sardar
+ * @license MIT
+ */
 import { ObjectId } from "mongodb";
 import { PermissionsArrayType } from "./permissions";
 
