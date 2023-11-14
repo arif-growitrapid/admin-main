@@ -3,11 +3,12 @@
 import config from "@/config";
 import clientPromise from "@/db/db";
 import { DBAuthType, roleType } from "@/types/auth";
-import { ObjectId, WithId } from "mongodb";
+import { Filter, ObjectId, WithId } from "mongodb";
 import { matchPermissions } from "./auth";
 import { Response, ServerFunctionResponse } from "./functions";
 import { revalidatePath } from "next/cache";
 import { forced_operators } from "@/app/api/auth/[...nextauth]/session";
+import { PermissionsArrayType } from "@/types/permissions";
 
 /**
  * Get a user by their ID
@@ -82,7 +83,7 @@ export async function searchForUser(
     query: string,
     limit: number = 10,
     skip: number = 0,
-): Promise<ServerFunctionResponse<Partial<DBAuthType>[] | null>> {
+): Promise<ServerFunctionResponse<{ users: Partial<DBAuthType>[]; total: number; } | null>> {
     try {
         if (!query || query === "") return Response("error", null, 400, "Query is required");
 
@@ -100,12 +101,20 @@ export async function searchForUser(
         const user_collection = db.collection<DBAuthType>("users");
 
         const users = await user_collection.find({
-            $or: [
-                { name: { $regex: query, $options: "i" } },
-                { email: { $regex: query, $options: "i" } },
-                { "phone.number": { $regex: query, $options: "i" } },
-            ]
+            $text: {
+                $search: query,
+                $caseSensitive: false,
+                $diacriticSensitive: false,
+            }
         }).skip(skip).limit(limit).toArray();
+
+        const total = await user_collection.countDocuments({
+            $text: {
+                $search: query,
+                $caseSensitive: false,
+                $diacriticSensitive: false,
+            }
+        });
 
         const new_users = users.map<Partial<DBAuthType>>((user: WithId<DBAuthType>) => {
             if (forced_operators.includes(user?.email || "") && !user?.roles.includes("operator")) {
@@ -125,7 +134,10 @@ export async function searchForUser(
             };
         });
 
-        return Response("success", new_users);
+        return Response("success", {
+            users: new_users,
+            total,
+        }, 200, "Success");
     } catch (error) {
         console.error(error);
         return Response("error", null, 500, "Internal server error");
@@ -136,10 +148,10 @@ export async function searchForUser(
  * Filter users by any field
  */
 export async function filterUsers(
-    filter: Partial<DBAuthType>,
+    filter: Filter<DBAuthType>,
     limit: number = 10,
     skip: number = 0,
-): Promise<ServerFunctionResponse<DBAuthType[] | null>> {
+): Promise<ServerFunctionResponse<{ users: DBAuthType[]; total: number; } | null>> {
     try {
         // Match permissions to view user
         // If the user has the permission to view user, then return the user
@@ -161,7 +173,9 @@ export async function filterUsers(
             ...((forced_operators.includes(user?.email || "") && !user?.roles.includes("operator")) ? { roles: [...user.roles, "operator"] } : {}),
         }));
 
-        return Response("success", users);
+        const total = await user_collection.countDocuments(filter);
+
+        return Response("success", { users, total }, 200, "Success");
     } catch (error) {
         console.error(error);
         return Response("error", null, 500, "Internal server error");
@@ -221,7 +235,11 @@ export async function createUser(
         // Match permissions to get if the user has the permission to create user
         // If the user has the permission to create user, then create the user as active
         const t = await matchPermissions(["user_add"]);
-        const { session, isMatched, matches } = t!;
+        const { session, isMatched, matches } = t || {
+            session: null,
+            isMatched: false,
+            matches: [] as PermissionsArrayType[],
+        };
         const isCreatedFromOperator = matches.includes("user_add");
 
         const client = await clientPromise;

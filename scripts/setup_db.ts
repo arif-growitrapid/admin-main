@@ -36,7 +36,7 @@ export default async function setup_db() {
         // Create the collections if they don't exist
         // auth db is usually managed by next-auth
         // Only have to create some users
-        const mock_users: AuthType[] = Array.from({ length: 10 }, () => {
+        const mock_users: AuthType[] = Array.from({ length: 20 }, () => {
             const id = new ObjectId();
 
             return {

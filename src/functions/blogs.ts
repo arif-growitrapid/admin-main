@@ -343,6 +343,97 @@ export async function viewBlog(blog_id: string, ip: string, path?: string): Prom
     }
 }
 
+export async function searchForBlog(
+    query: string,
+    limit: number,
+    skip: number,
+): Promise<ServerFunctionResponse<{
+    blogs: WithId<DBBlogPostType>[];
+    total: number;
+} | null>> {
+    try {
+        // Match permissions to view user
+        // If the user has the permission to view user, then return the user
+        const t = await matchPermissions(["blogs_view_published", "blogs_view_draft"]);
+        const { session, isMatched, matches } = t ?? {
+            session: null,
+            isMatched: false,
+            matches: ["blogs_view_published"] as ["blogs_view_published" | "blogs_view_draft"],
+        };
+
+        const should_view_draft = matches.includes("blogs_view_draft");
+
+        const client = await clientPromise;
+
+        const db = client.db(config.db.blog_name);
+        const collection = db.collection<DBBlogPostType>("posts");
+
+        const blogs = await collection.find({
+            $text: {
+                $search: query,
+                $caseSensitive: false,
+                $diacriticSensitive: false,
+            },
+            is_published: should_view_draft ? { $in: [true, false] } : true,
+        }).skip(skip).limit(limit).toArray();
+
+        const total = await collection.countDocuments({
+            $text: {
+                $search: query,
+                $caseSensitive: false,
+                $diacriticSensitive: false,
+            },
+            is_published: should_view_draft ? { $in: [true, false] } : true,
+        });
+
+        return Response("success", {
+            blogs,
+            total,
+        }, 200, "Blogs fetched successfully");
+    } catch (error) {
+        console.error(error);
+        return Response("error", null, 500, "Internal server error");
+    }
+}
+
+export async function filterBlogs(
+    filter: "views" | "likes" | "saves",
+    limit: number,
+    skip: number,
+): Promise<ServerFunctionResponse<{
+    blogs: WithId<DBBlogPostType>[];
+    total: number;
+} | null>> {
+    try {
+        // Match permissions to view user
+        // If the user has the permission to view user, then return the user
+        // await matchPermissions(["blogs_view_published", "blogs_view_draft"]);
+
+        const client = await clientPromise;
+
+        const db = client.db(config.db.blog_name);
+        const collection = db.collection<DBBlogPostType>("posts");
+
+        const blogs = await collection.find({
+            is_published: true,
+        }).sort({
+            [filter]: -1,
+        }).skip(skip).limit(limit).toArray();
+
+        const total = await collection.countDocuments({
+            is_published: true,
+        });
+
+        return Response("success", {
+            blogs,
+            total,
+        }, 200, "Blogs fetched successfully");
+    } catch (error) {
+        console.error(error);
+        return Response("error", null, 500, "Internal server error");
+    }
+}
+
 export async function deleteBlog(blog_id: string, path?: string): Promise<ServerFunctionResponse<boolean | null>> {
     try {
         // Match permissions to view user

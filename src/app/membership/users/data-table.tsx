@@ -3,6 +3,7 @@
 import {
     ColumnDef,
     ColumnFiltersState,
+    PaginationState,
     SortingState,
     VisibilityState,
     flexRender,
@@ -36,37 +37,98 @@ import { roleType } from "@/types/auth"
 
 interface DataTableProps<TData, TValue> {
     initial_data: TData[],
+    initial_total?: number,
     initial_roles?: roleType[],
 }
 
 export function DataTable<TData, TValue>({
     initial_data,
+    initial_total = 0,
     initial_roles,
 }: DataTableProps<TData, TValue>) {
+    const [data, setData] = React.useState<TData[]>(initial_data);
+    const [total, setTotal] = React.useState(initial_total);
+    const [isPending, startTransition] = React.useTransition();
+    const [columnFilterBy, setColumnFilterBy] = React.useState("email");
+    const [filterQuery, setFilterQuery] = React.useState("");
+
+    // States for react-table
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-    const [columnFilterBy, setColumnFilterBy] = React.useState("email");
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-    const [rowSelection, setRowSelection] = React.useState({})
-    const [data, setData] = React.useState<TData[]>(initial_data);
-    const [isPending, startTransition] = React.useTransition();
+    const [rowSelection, setRowSelection] = React.useState({});
+    const [{ pageIndex, pageSize }, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+
+    React.useEffect(() => { setData(initial_data); }, [initial_data]);
 
     function refreshData() {
         setData([]);
         startTransition(async () => {
-            const data = await filterUsers({}) || { data: [] };
+            const data = await filterUsers({
+                [columnFilterBy]: {
+                    $regex: filterQuery,
+                    $options: "i",
+                },
+            }, 10, pageIndex * pageSize) || {
+                data: {
+                    users: [],
+                    total: 0
+                }
+            };
 
-            setData((data.data || []) as TData[]);
+            setData((data.data?.users || []) as TData[]);
+            setTotal(data.data?.total || 0);
         });
     }
 
+    // Update data when pagination changes
     React.useEffect(() => {
-        setData(initial_data);
-    }, [initial_data]);
+        setData([]);
 
-    const columns = useColumns({
-        initial_roles
-    }) as ColumnDef<TData, TValue>[]
+        startTransition(async () => {
+            const data = await filterUsers({}, 10, pageIndex * pageSize) || {
+                data: {
+                    users: [],
+                    total: 0
+                }
+            };
+
+            setData((data.data?.users || []) as TData[]);
+            setTotal(data.data?.total || 0);
+        });
+    }, [pageIndex, pageSize]);
+
+    // Update data when column filters change
+    React.useEffect(() => {
+        if (!filterQuery) {
+            setData(initial_data);
+            setTotal(initial_total);
+            return;
+        };
+        setData([]);
+
+        startTransition(async () => {
+            const data = await filterUsers({
+                [columnFilterBy]: {
+                    $regex: filterQuery,
+                    $options: "i",
+                },
+            }, 10, 0) || {
+                data: {
+                    users: [],
+                    total: 0
+                }
+            };
+
+            setData((data.data?.users || []) as TData[]);
+            setTotal(data.data?.total || 0);
+            setPagination({ pageIndex: 0, pageSize: 10});
+        });
+    }, [filterQuery, columnFilterBy]);
+
+    const pagination = React.useMemo(() => ({ pageIndex, pageSize }), [pageIndex, pageSize]);
+
+    const columns = useColumns({ initial_roles }) as ColumnDef<TData, TValue>[];
 
     const table = useReactTable({
         data,
@@ -74,17 +136,23 @@ export function DataTable<TData, TValue>({
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
         onRowSelectionChange: setRowSelection,
+        getPaginationRowModel: getPaginationRowModel(),
         state: {
             sorting,
             columnFilters,
             columnVisibility,
             rowSelection,
+            pagination,
         },
+
+        // Pagination
+        manualPagination: true,
+        pageCount: Math.ceil(total / 10),
+        onPaginationChange: setPagination,
     })
 
     return (
@@ -94,10 +162,8 @@ export function DataTable<TData, TValue>({
                 <div className="flex gap-1">
                     <Input
                         placeholder={`Filter ${columnFilterBy}s...`}
-                        value={(table.getColumn(columnFilterBy)?.getFilterValue() as string) ?? ""}
-                        onChange={(event) =>
-                            table.getColumn(columnFilterBy)?.setFilterValue(event.target.value)
-                        }
+                        value={filterQuery}
+                        onChange={(e) => setFilterQuery(e.target.value)}
                         className="max-w-sm"
                     />
                     <Select defaultValue={"email"}
@@ -215,17 +281,24 @@ export function DataTable<TData, TValue>({
                 </Table>
             </ScrollArea>
 
-            <div className="flex items-center justify-end px-2 py-2 border-t-4">
+            <div className="flex items-center justify-end px-2 py-2 border-t-4 gap-2">
                 <div className="flex-1 text-sm text-muted-foreground">
                     {table.getFilteredSelectedRowModel().rows.length} of{" "}
                     {table.getFilteredRowModel().rows.length} row(s) selected.
+                </div>
+                <div className="h-full flex items-center gap-1 align-middle text-sm text-muted-foreground">
+                    <div>Page</div>
+                    <strong>
+                        {table.getState().pagination.pageIndex + 1} of{' '}
+                        {table.getPageCount()}
+                    </strong>
                 </div>
                 <div className="space-x-2">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
+                        disabled={!table.getCanPreviousPage() || isPending}
                     >
                         Previous
                     </Button>
@@ -233,7 +306,7 @@ export function DataTable<TData, TValue>({
                         variant="outline"
                         size="sm"
                         onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
+                        disabled={!table.getCanNextPage() || isPending}
                     >
                         Next
                     </Button>
