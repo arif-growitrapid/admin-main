@@ -20,7 +20,9 @@ export async function POST(request: Request) {
         let results: any[] = [];
 
         if (usersOnly) {
-            results = (await searchForUser(query, limit)).data || [];
+            const users = (await searchForUser(query, limit)).data || [];
+
+            results.concat(users);
         } else if (postsOnly) {
             // results = await global.findPosts(query, limit);
         } else {
