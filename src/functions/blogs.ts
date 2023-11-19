@@ -1,7 +1,7 @@
 "use server";
 
 import { BlogTagType, DBBlogPostType } from "@/types/blog";
-import { ObjectId, WithId } from "mongodb";
+import { Filter, ObjectId, WithId } from "mongodb";
 import { Response, ServerFunctionResponse } from "./functions";
 import { MinifyAuth, matchPermissions } from "./auth";
 import config from "@/config";
@@ -523,6 +523,40 @@ export async function searchForBlog(
 }
 
 export async function filterBlogs(
+    filter: Filter<DBBlogPostType>,
+    limit: number = 10,
+    skip: number = 0,
+): Promise<ServerFunctionResponse<{
+    blogs: WithId<DBBlogPostType>[];
+    total: number;
+} | null>> {
+    try {
+        // Match permissions to view user
+        // If the user has the permission to view user, then return the user
+        // await matchPermissions(["blogs_view_published", "blogs_view_draft"]);
+        const client = await clientPromise;
+
+        const db = client.db(config.db.blog_name);
+        const collection = db.collection<DBBlogPostType>("posts");
+
+        const blogs = await collection.find({
+            ...filter,
+            is_published: true,
+        }).skip(skip).limit(limit).toArray();
+
+        const total = await collection.countDocuments(filter);
+
+        return Response("success", {
+            blogs,
+            total,
+        }, 200, "Blogs fetched successfully");
+    } catch (error) {
+        console.error(error);
+        return Response("error", null, 500, "Internal server error");
+    }
+}
+
+export async function sortBlogsBy(
     filter: "views" | "likes" | "saves",
     limit: number,
     skip: number,
