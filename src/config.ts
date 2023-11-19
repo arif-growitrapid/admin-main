@@ -35,6 +35,7 @@ export default {
         auth_name: "auth",
         root_name: "root",
         blog_name: "blog",
+        course_name: "courses",
         static_db_name: "static_db",
         default_document_collection_name: "default_document_collection",
     },
