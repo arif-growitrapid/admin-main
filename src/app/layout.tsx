@@ -30,7 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <html lang='en'>
             <body className={`${inter.className} ${theme?.value || "dark"}`}>
                 <Providers theme={theme?.value} session={session}>
-                    <Structure theme={theme?.value || ""}>
+                    <Structure theme={theme?.value || "dark"}>
                         {children}
                         <Toaster />
                     </Structure>
