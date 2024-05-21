@@ -101,6 +101,7 @@ export interface CoursesTypes {
       internalTags: string[];
       whatYouWillLearn: string[];
     }[];
+    redirectLink: string;
   };
 
   udemy: {

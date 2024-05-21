@@ -1,6 +1,6 @@
 "use server";
 
-import { Filter, ObjectId } from "mongodb";
+import { Collection, Filter, ObjectId } from "mongodb";
 import {
   COURSE_PROVIDERS,
   COURSE_PROVIDER_NAMES,
@@ -13,6 +13,9 @@ import { matchPermissions } from "./auth";
 import clientPromise from "@/db/db";
 import config from "@/config";
 import { revalidatePath } from "next/cache";
+import { COURSE_PROVIDERS_SCHEMA } from "@/app/services/courses/upload/courses.types";
+import { z } from "zod";
+import path from "path";
 
 export async function createCourse(
   provider: (typeof COURSE_PROVIDERS)[number],
@@ -102,6 +105,113 @@ export async function createCourse(
   } catch (error) {
     console.error(error);
     return Response("error", null, 500, "Internal server error");
+  }
+}
+
+export async function uploadCourses({
+  tag,
+  data,
+  path,
+}: {
+  tag: string;
+  data: z.infer<typeof COURSE_PROVIDERS_SCHEMA>[];
+  path?: string;
+}): Promise<ServerFunctionResponse<boolean>> {
+  try {
+    // Match permissions to view user
+    // If the user has the permission to view user, then return the user
+    const t = await matchPermissions(["course_add"]);
+    if (!t)
+      return Response(
+        "error",
+        false,
+        401,
+        "You don't have the permission to upload courses"
+      );
+    const { session, isMatched, matches } = t;
+
+    if (!isMatched)
+      return Response(
+        "error",
+        false,
+        401,
+        "You don't have the permission to upload courses"
+      );
+
+    const userId = session.user.id.toString();
+
+    const client = await clientPromise;
+    const db = client.db(config.db.course_name);
+    const currentTimestamp = new Date();
+
+    const metaData = (provider: string, title: string) => ({
+      provider,
+      slug: title.toLowerCase().replace(/ /g, "-"),
+      published_by: userId ?? "",
+      published_at: currentTimestamp,
+      updated_by: userId ?? "",
+      updated_at: currentTimestamp,
+
+      is_published: false,
+      is_featured: false,
+      is_verified: false,
+      is_approved: false,
+      is_premium: false,
+
+      tag_string: tag,
+
+      views: 0,
+      likes: 0,
+      saves: 0,
+      viewed_by: [],
+      viewed_by_ip: [],
+      liked_by: [],
+      saved_by: [],
+
+      is_seo_compatabile: false,
+      is_open_graph_compatabile: false,
+    });
+
+    // Get the courses collection: Provider
+    const collections: Record<
+      keyof CoursesTypes,
+      Collection<
+        DBCourseType<
+          "coursera" | "udemy" | "edx" | "khanacademy" | "others" | "selfhosted"
+        >
+      >[]
+    > = {} as any;
+
+    // sort data by provider and insert into respective collection
+    data.forEach((d) => {
+      const provider = d.provider;
+      // @ts-ignore
+      const meta = metaData(provider, d.title);
+      collections[provider] = collections[provider] || [];
+      collections[provider].push({
+        // @ts-ignore
+        _id: new ObjectId(),
+        data: d,
+        meta,
+      });
+    });
+
+    // insert data into respective collection
+    for (const provider in collections) {
+      // @ts-ignore
+      await collections[provider].forEach(async (course) => {
+        await db
+          // @ts-ignore
+          .collection<DBCourseType<typeof provider>>(provider)
+          .insertOne(course);
+      });
+    }
+
+    path && revalidatePath(path);
+    return Response("success", true, 200, "Courses uploaded successfully");
+  } catch (error) {
+    console.error(error);
+    return Response("error", false, 500, "Internal server error");
   }
 }
 

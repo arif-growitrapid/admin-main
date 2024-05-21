@@ -3,13 +3,9 @@
 import React from "react";
 import { z } from "zod";
 import * as XLSX from "xlsx";
-import {
-  COURSERA_COURSE_SCHEMA,
-  COURSE_PROVIDERS_SCHEMA,
-  COURSE_PROVIDER_KEYS,
-} from "./courses.types";
+import { COURSE_PROVIDERS_SCHEMA, COURSE_PROVIDER_KEYS } from "./courses.types";
 import { Button } from "@/components/ui/button";
-import { FaAngleDown, FaPlus, FaTrash } from "react-icons/fa6";
+import { FaPlus, FaTrash } from "react-icons/fa6";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -27,66 +23,14 @@ import {
 } from "react-icons/vsc";
 import { socket } from "./socket";
 import { toast } from "@/components/ui/use-toast";
+import { StopwatchIcon } from "@radix-ui/react-icons";
 import {
-  CodeIcon,
-  OpenInNewWindowIcon,
-  StopwatchIcon,
-} from "@radix-ui/react-icons";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
-const serverRequestDataSchema = z.object({
-  id: z.string(),
-  url: z.string(),
-  thumbnail: z.string(),
-  provider: z.enum(COURSE_PROVIDER_KEYS),
-});
-
-const serverRequestSchema = z.object({
-  tag: z.string(),
-  data: z.array(serverRequestDataSchema),
-});
-
-const serverResponseDataSchema = z.object({
-  id: z.string(),
-  url: z.string(),
-  thumbnail: z.string(),
-  provider: z.enum(COURSE_PROVIDER_KEYS),
-  statusCode: z.enum(["pending", "parsing", "done", "error"]),
-
-  // Optional fields.
-  response: COURSE_PROVIDERS_SCHEMA.optional(),
-  status: z.string().optional(),
-  error: z.string().optional(),
-});
-
-const serverResponseSchema = z.object({
-  tag: z.string(),
-  status: z.enum(["parsing", "done", "error", "partial_error"]),
-  data: z.array(serverResponseDataSchema).optional(),
-  error: z.string().optional(),
-  message: z.string().optional(),
-});
+  serverRequestSchema,
+  serverResponseDataSchema,
+  serverResponseSchema,
+} from "../schema";
+import CourseraCourseCard from "../courseCards/coursera_course_card";
+import { uploadCourses } from "@/functions/courses";
 
 const test = {
   id: "1",
@@ -310,13 +254,14 @@ const test = {
 };
 
 export default function Page({}: {}) {
+  const [isPending, startTransition] = React.useTransition();
   const [isSocketConnected, setIsSocketConnected] = React.useState(
     socket.connected
   );
   const [data, setData] = React.useState<
     z.infer<typeof serverResponseSchema> | undefined
   >();
-  // {
+  //   {
   //   tag: "4/13/2024, 11:39:33 PM",
   //   status: "done",
   //   data: Array.from(
@@ -325,8 +270,10 @@ export default function Page({}: {}) {
   //       ({
   //         ...test,
   //         id: (index + 1).toString(),
-  //         statusCode: index > 5 ? "pending" : "done",
+  //         statusCode: index === 3 ? "error" : index > 5 ? "pending" : "done",
   //         response: index > 5 ? undefined : test.response,
+  //         error: index === 3 ? "An error occurred while scraping data." : "",
+  //         message: index === 3 ? "An error occurred while scraping data." : "",
   //       }) as z.infer<typeof serverResponseDataSchema>
   //   ),
   //   message: "",
@@ -342,6 +289,9 @@ export default function Page({}: {}) {
     },
   ]);
   const [isScraping, setIsScraping] = React.useState(false);
+  const [scrappingIndex, setScrappingIndex] = React.useState<number | null>(
+    null
+  );
   const [tag, setTag] = React.useState<string>(new Date().toLocaleString());
   const [timeElapsed, setTimeElapsed] = React.useState({
     time: 0,
@@ -457,7 +407,60 @@ export default function Page({}: {}) {
     });
   }
 
-  function uploadData() {}
+  async function scrapSingleCourse(index: number) {
+    setScrappingIndex(index);
+
+    console.log("Scraping single course", dataToUpload[index]);
+
+    const res = await fetch("http://localhost:5000/courses/scrap", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataToUpload[index]),
+    });
+
+    const data = (await res.json()) as {
+      data: z.infer<typeof COURSE_PROVIDERS_SCHEMA>;
+    };
+
+    if (res.ok) {
+      // @ts-ignore
+      setData((prev) => {
+        const copy = { ...prev };
+        copy.data![index].response = data.data;
+        return copy;
+      });
+    }
+
+    setScrappingIndex(null);
+  }
+
+  function uploadData() {
+    startTransition(async () => {
+      console.log("Uploading data", data?.data?.map((d) => d.response));
+
+      const res = await uploadCourses({
+        tag: tag,
+        // @ts-ignore
+        data: data?.data ? data.data.map((d) => d.response) : [],
+      });
+
+      if (res.type === "success") {
+        toast({
+          title: "Data uploaded successfully",
+          description: "The data has been uploaded to the server.",
+        });
+      } else {
+        toast({
+          title: "An error occurred while uploading data",
+          description:
+            res.error ||
+            "An error occurred while uploading data to the server.",
+        });
+      }
+    });
+  }
 
   return (
     <div className="w-full h-full p-2">
@@ -638,7 +641,11 @@ export default function Page({}: {}) {
           <div className="h-[calc(100%-48px)] w-full">
             {data?.data ? (
               <ScrollArea className="w-full h-full" orientation="vertical">
-                <CoursesList data={data.data} />
+                <CoursesList
+                  data={data.data}
+                  scrappingIndex={scrappingIndex}
+                  scrapeSingleCourse={scrapSingleCourse}
+                />
               </ScrollArea>
             ) : (
               <div className="flex flex-col gap-2 items-center justify-center h-full">
@@ -695,7 +702,11 @@ export default function Page({}: {}) {
             Scrap Data
           </Button>
           <Button onClick={uploadData}>
-            <VscCloudUpload className="mr-2 w-6 h-6" />
+            {isPending ? (
+              <VscLoading className="mr-2 w-6 h-6 animate-spin" />
+            ) : (
+              <VscCloudUpload className="mr-2 w-6 h-6" />
+            )}{" "}
             Upload
           </Button>
         </div>
@@ -706,8 +717,12 @@ export default function Page({}: {}) {
 
 function CoursesList({
   data,
+  scrappingIndex,
+  scrapeSingleCourse,
 }: {
   data: z.infer<typeof serverResponseDataSchema>[];
+  scrappingIndex: number | null;
+  scrapeSingleCourse: (index: number) => void;
 }) {
   const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
 
@@ -725,406 +740,11 @@ function CoursesList({
                 index={index}
                 selectedIndex={selectedIndex}
                 setSelectedIndex={setSelectedIndex}
+                scrappingIndex={scrappingIndex}
+                scrapeSingleCourse={scrapeSingleCourse}
               />
             )
         )}
-      </div>
-    </div>
-  );
-}
-
-function CourseraCourseCard({
-  item,
-  index,
-  selectedIndex,
-  setSelectedIndex,
-}: {
-  // Forcing the item to be of type COURSERA_COURSE_SCHEMA
-  item: z.infer<typeof serverResponseDataSchema> & {
-    provider: "coursera";
-    response: z.infer<typeof COURSERA_COURSE_SCHEMA>;
-  };
-  index: number;
-  selectedIndex: number | null;
-  setSelectedIndex: (index: number | null) => void;
-}) {
-  if (item.provider !== "coursera") return null;
-
-  return (
-    <div key={index} className="w-full">
-      {/* Card */}
-      <div className="relative overflow-visible text-foreground">
-        <div
-          className="relative w-full h-auto border border-foreground/70 rounded-lg overflow-hidden cursor-pointer"
-          onClick={() =>
-            setSelectedIndex(index === selectedIndex ? null : index)
-          }
-        >
-          <Image
-            src={item.thumbnail}
-            alt="Thumbnail"
-            width={200}
-            height={200}
-            className="absolute inset-0 w-full h-full object-cover object-center z-0"
-          />
-
-          <div className="absolute w-full h-full z-[5] top-0 left-0 bg-cover bg-center bg-gradient-to-r bg-no-repeat from-background to-background/80" />
-
-          <div
-            className={`relative min-h-[170px] max-h-[250px] 
-                    flex flex-col justify-between items-stretch gap-2 px-4 py-4
-                    z-10`}
-          >
-            <div className={`flex flex-row justify-start gap-2`}>
-              <div className="grid place-items-center w-8 h-8 bg-background rounded-md">
-                {index + 1}
-              </div>
-
-              {item.statusCode === "done" ? (
-                <h2 className={`text-base font-semibold flex-grow`}>
-                  {item.response?.title}
-                </h2>
-              ) : item.statusCode === "error" ? (
-                <h2 className={`text-base font-semibold flex-grow`}>Error</h2>
-              ) : (
-                <div className="flex flex-col gap-1 flex-grow">
-                  <Skeleton className="w-32 h-4 bg-primary/20" />
-                  <Skeleton className="w-24 h-4 bg-primary/20" />
-                </div>
-              )}
-
-              <span className={`text-xl`}>
-                <FaAngleDown className={`inline-block`} />
-              </span>
-            </div>
-
-            {item.statusCode === "done" ? (
-              <p className={`text-sm`}>
-                {(item.response?.description || "").slice(0, 100)}...
-              </p>
-            ) : item.statusCode === "error" ? (
-              <p className={`text-sm`}>
-                {item.error || "An error occurred while fetching data."}
-              </p>
-            ) : (
-              <div className="flex flex-col gap-1">
-                <Skeleton className="w-60 h-4 bg-primary/20" />
-                <Skeleton className="w-44 h-4 bg-primary/20" />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Overlay */}
-        <div
-          className={cn(
-            "absolute z-20 w-0 h-0 left-[calc(50%-10px)]",
-            "transition-all duration-300",
-            "border-l-[10px] border-r-[10px] border-b-[10px] border-transparent border-b-muted",
-            selectedIndex === index
-              ? "-bottom-6 opacity-100"
-              : " bottom-0 opacity-0"
-          )}
-        />
-      </div>
-
-      {/* Expanded Details */}
-      <div
-        key={index}
-        className={cn(
-          "w-full h-auto relative z-20 left-0 overflow-hidden",
-          "transition-all duration-300",
-          // Two Clildren
-          "[@media(min-width:1280px)]:w-[calc(200%+0.5rem)]",
-          index % 2 === 1 &&
-            "[@media(min-width:1280px)_and_(max-width:1675px)]:-ml-[calc(100%+0.5rem)]",
-          // Three Children
-          "[@media(min-width:1675px)]:w-[calc(300%+1rem)]",
-          index % 3 === 1 &&
-            "[@media(min-width:1675px)_and_(max-width:2070px)]:-ml-[calc(100%+0.5rem)]",
-          index % 3 === 2 &&
-            "[@media(min-width:1675px)_and_(max-width:2070px)]:-ml-[calc(200%+1rem)]",
-          // Four Children
-          "[@media(min-width:2070px)]:w-[calc(400%+1.5rem)]",
-          index % 4 === 1 &&
-            "[@media(min-width:2070px)_and_(max-width:2465px)]:-ml-[calc(100%+0.5rem)]",
-          index % 4 === 2 &&
-            "[@media(min-width:2070px)_and_(max-width:2465px)]:-ml-[calc(200%+1rem)]",
-          index % 4 === 3 &&
-            "[@media(min-width:2070px)_and_(max-width:2465px)]:-ml-[calc(300%+1.5rem)]",
-          // Five Children
-          "[@media(min-width:2465px)]:w-[calc(500%+2rem)]",
-          index % 5 === 1 &&
-            "[@media(min-width:2465px)]:-ml-[calc(100%+0.5rem)]",
-          index % 5 === 2 && "[@media(min-width:2465px)]:-ml-[calc(200%+1rem)]",
-          index % 5 === 3 &&
-            "[@media(min-width:2465px)]:-ml-[calc(300%+1.5rem)]",
-          index % 5 === 4 && "[@media(min-width:2465px)]:-ml-[calc(400%+2rem)]",
-          selectedIndex === index
-            ? "max-h-[3000px] py-2 mt-4 opacity-100"
-            : "max-h-0 opacity-0"
-        )}
-      >
-        <div className="relative w-full border rounded-md bg-background/95">
-          {item.statusCode === "done" ? (
-            <div className="flex flex-col gap-2 p-2">
-              {/* Top */}
-              <div className="flex flex-row flex-wrap">
-                {/* Hero Section */}
-                <div className="flex flex-row gap-2 items-center">
-                  <div className="w-56 h-32 bg-gray-800 rounded-md border overflow-hidden flex-shrink-0">
-                    <Image
-                      src={item.response?.thumbnail || ""}
-                      alt="Thumbnail"
-                      width={228}
-                      height={128}
-                      className="w-auto h-full object-cover object-center"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2 max-w-md">
-                    <p className="text-lg font-bold">
-                      {item.response?.title || ""}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">
-                        Instructors:{" "}
-                      </span>
-                      {item.response?.instructors.slice(0, 3).join(", ")}
-                      {(item.response?.instructors.length || 0) > 3 && (
-                        <HoverCard>
-                          &nbsp;&{" "}
-                          <HoverCardTrigger asChild>
-                            <span className="underline cursor-pointer">
-                              {(item.response?.instructors.length || 0) - 3}{" "}
-                              more.
-                            </span>
-                          </HoverCardTrigger>
-                          <HoverCardContent>
-                            <h2 className="text-lg font-semibold">
-                              Instructors
-                            </h2>
-                            <ol className="list-decimal list-inside">
-                              {item.response?.instructors.map(
-                                (instructor, index) => (
-                                  <li key={index}>{instructor}</li>
-                                )
-                              )}
-                            </ol>
-                          </HoverCardContent>
-                        </HoverCard>
-                      )}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">
-                        Description:{" "}
-                      </span>
-                      {item.response?.description}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Tools Section */}
-                <div className="flex flex-row flex-wrap flex-grow gap-2 p-2 border rounded-md">
-                  {/* JSON Response Preview */}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="gap-2">
-                        <CodeIcon className="w-6 h-6" />
-                        Response
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="w-full md:w-[1024px] max-w-full">
-                      <DialogHeader>
-                        <DialogTitle>JSON Response</DialogTitle>
-                        <DialogDescription>
-                          The JSON response from the server for this course.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <pre className="w-[calc(100%-48px)] md:w-[calc(1024px-48px)] text-sm border rounded-md">
-                        <ScrollArea
-                          className="w-full h-[400px] p-2"
-                          orientation="both"
-                        >
-                          <code>{JSON.stringify(item, null, 2)}</code>
-                        </ScrollArea>
-                      </pre>
-                    </DialogContent>
-                  </Dialog>
-                  {/* Open Course in new tab */}
-                  <Button asChild variant="outline" className="gap-2">
-                    <a
-                      href={item.response?.redirectLink}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <OpenInNewWindowIcon className="w-6 h-6" />
-                      Open Course
-                    </a>
-                  </Button>
-                </div>
-              </div>
-
-              {/* Tags */}
-              <ScrollArea orientation="horizontal" className="w-full pb-2.5">
-                <div className="flex flex-row gap-2 whitespace-nowrap">
-                  {item.response?.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-accent rounded-md text-sm"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </ScrollArea>
-
-              {/* Outcomes */}
-              <div className="flex flex-col gap-2">
-                <p className="text-base font-semibold">Outcomes</p>
-                <p className="text-sm text-muted-foreground">
-                  {item.response?.outcomes}
-                </p>
-              </div>
-
-              {/* Grid Auto To Display Short Information */}
-              <div className="grid gap-2 [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
-                {/* Experience */}
-                <div className="flex flex-col gap-2 border rounded-md p-2">
-                  <p className="text-base font-semibold">Experience</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.response?.experience}
-                  </p>
-                </div>
-                {/* Duration */}
-                <div className="flex flex-col gap-2 border rounded-md p-2">
-                  <p className="text-base font-semibold">Duration</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.response?.duration}
-                  </p>
-                </div>
-                {/* Rating */}
-                <div className="flex flex-col gap-2 border rounded-md p-2">
-                  <p className="text-base font-semibold">Rating</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.response?.rating}
-                  </p>
-                </div>
-                {/* Total Enrolled Students */}
-                <div className="flex flex-col gap-2 border rounded-md p-2">
-                  <p className="text-base font-semibold">Total Enrolled</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.response?.total_enrolled_students}
-                  </p>
-                </div>
-                {/* Reviews */}
-                <div className="flex flex-col gap-2 border rounded-md p-2">
-                  <p className="text-base font-semibold">Reviews</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.response?.reviews}
-                  </p>
-                </div>
-                {/* Average Salary */}
-                <div className="flex flex-col gap-2 border rounded-md p-2">
-                  <p className="text-base font-semibold">Average Salary</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.response?.avg_salary}
-                  </p>
-                </div>
-                {/* Job Openings */}
-                <div className="flex flex-col gap-2 border rounded-md p-2">
-                  <p className="text-base font-semibold">Job Openings</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.response?.job_openings}
-                  </p>
-                </div>
-                {/* Guarantee Percentage */}
-                <div className="flex flex-col gap-2 border rounded-md p-2">
-                  <p className="text-base font-semibold">
-                    Guarantee Percentage
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.response?.guarantee_percentage}
-                  </p>
-                </div>
-              </div>
-
-              {/* What You Will Learn */}
-              <div className="flex flex-col gap-2">
-                <p className="text-base font-semibold">What You Will Learn</p>
-                <ul className="list-disc list-inside text-sm text-muted-foreground pl-4">
-                  {item.response?.what_you_will_learn.map((point, index) => (
-                    <li key={index}>{point}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Series using Acordition */}
-              <p className="text-lg font-medium">Available Series</p>
-              <Accordion
-                type="single"
-                collapsible
-                className="w-full flex flex-row flex-wrap gap-2 items-start"
-              >
-                {item.response?.series.map((series, index) => (
-                  <AccordionItem
-                    value={`${index}`}
-                    key={index}
-                    className="w-full [@media(min-width:1280px)]:w-[calc(50%-8px)] border rounded-md p-2"
-                  >
-                    <AccordionTrigger className="p-0 text-base font-medium">
-                      {series.title}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="flex flex-col gap-2">
-                        <p className="text-sm text-muted-foreground">
-                          {series.duration}
-                        </p>
-                        <p className="text-sm font-semibold">
-                          Rating:{" "}
-                          <span className="font-normal text-muted-foreground">
-                            {series.rating}
-                          </span>
-                        </p>
-                        <div className="flex flex-row gap-2">
-                          <p className="text-sm font-semibold">Tags:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {series.internalTags.map((tag, index) => (
-                              <span
-                                key={index}
-                                className="px-2 py-1 bg-accent rounded-md text-sm"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-sm font-semibold">
-                          What You Will Learn
-                        </p>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground pl-4">
-                          {series.whatYouWillLearn.map((point, index) => (
-                            <li key={index}>{point}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          ) : item.statusCode === "error" ? (
-            <div className="flex flex-col gap-2 p-2">
-              <p className="text-base font-semibold">Error</p>
-              <p className="text-sm text-red-400">{item.error}</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2 p-2 pt-4 pb-8">
-              <Skeleton className="w-4/5 h-4 bg-primary/20" />
-              <Skeleton className="w-3/5 h-4 bg-primary/20" />
-              <Skeleton className="w-2/5 h-4 bg-primary/20" />
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
